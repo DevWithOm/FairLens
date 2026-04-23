@@ -1,27 +1,25 @@
+# ═══════════════════════════════════════
+# FairLens API — Cloud Run Dockerfile
+# ═══════════════════════════════════════
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy root files
-COPY package.json ./
+# Copy server package files and install
+COPY server/package.json server/package-lock.json ./server/
+RUN cd server && npm ci --omit=dev
 
-# Install client dependencies and build
-COPY client/ ./client/
-RUN cd client && npm install && npm run build
-
-# Install server dependencies
+# Copy server source code
 COPY server/ ./server/
-RUN cd server && npm install
 
-# Copy datasets
+# Copy datasets used by the ML engine
 COPY Datasets/ ./Datasets/
 
-# Expose port
-EXPOSE 5000
-
-# Set production mode
+# Cloud Run sets the PORT env variable automatically
 ENV NODE_ENV=production
-ENV PORT=5000
 
-# Start the server (serves built client in production)
+# Cloud Run requires listening on the PORT env variable (default 8080)
+EXPOSE 8080
+
+# Start the Express API server
 CMD ["node", "server/index.js"]

@@ -4,15 +4,15 @@
   "private": true,
   "description": "FairLens — AI-Powered Bias Detection & Remediation Platform",
   "scripts": {
-    "install:frontend": "cd frontend && npm install",
-    "install:backend": "cd backend && npm install",
-    "install:all": "npm run install:frontend && npm run install:backend",
-    "dev:frontend": "cd frontend && npm run dev",
-    "dev:backend": "cd backend && npm run dev",
-    "dev": "start /B npm run dev:backend && npm run dev:frontend",
-    "build:frontend": "cd frontend && npm run build",
-    "build": "npm run build:frontend",
-    "start": "cd backend && npm start"
+    "install:client": "cd client && npm install",
+    "install:server": "cd server && npm install",
+    "install:all": "npm run install:client && npm run install:server",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "dev": "start /B npm run dev:server && npm run dev:client",
+    "build:client": "cd client && npm run build",
+    "build": "npm run build:client",
+    "start": "cd server && npm start"
   },
   "keywords": ["ai", "bias", "fairness", "audit", "machine-learning"],
   "license": "MIT"
