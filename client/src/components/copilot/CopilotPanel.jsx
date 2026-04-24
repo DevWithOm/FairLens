@@ -140,7 +140,7 @@ export default function CopilotPanel({ onClose }) {
           </div>
           <div>
             <h3 style={{ fontSize: '0.9375rem', fontWeight: 700 }}>FairLens Copilot</h3>
-            <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Powered by Gemini</p>
+            <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Powered by Groq</p>
           </div>
         </div>
         <button
@@ -201,6 +201,7 @@ export default function CopilotPanel({ onClose }) {
                   Offline Mode: {
                     msg.errorType === 'rate-limit' ? 'Rate Limit Reached' : 
                     msg.errorType === 'model-overloaded' ? 'Model Overloaded (High Demand)' : 
+                    msg.errorType === 'invalid-key' ? 'Invalid API Key' :
                     'Connect Error'
                   }
                 </div>

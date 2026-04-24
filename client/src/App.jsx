@@ -5,6 +5,7 @@ import Topbar from './components/layout/Topbar'
 import InspectTab from './components/tabs/InspectTab'
 import MeasureTab from './components/tabs/MeasureTab'
 import ReportTab from './components/tabs/ReportTab'
+import FixTab from './components/tabs/FixTab'
 import LandingTab from './components/tabs/LandingTab'
 import CopilotPanel from './components/copilot/CopilotPanel'
 import { translate } from './lib/i18n'
@@ -68,7 +69,7 @@ export default function App() {
   return (
     <DataContext.Provider value={contextValue}>
       {!isAuthenticated ? (
-        <div style={{ minHeight: '100vh', padding: '48px' }}>
+        <div style={{ minHeight: '100vh' }}>
           <LandingTab onAuth={(tab = 'inspect') => {
             setActiveTab(tab)
             setIsAuthenticated(true)

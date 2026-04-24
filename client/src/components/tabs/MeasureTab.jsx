@@ -351,7 +351,7 @@ export default function MeasureTab() {
               {t('Bias Measurement')}
             </h2>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+          <p style={{ color: 'var(--text-primary)', fontSize: '0.875rem' }}>
             {t('Analyze target outcomes across sensitive demographic groups')} <strong style={{ color: 'var(--accent-blue)', fontFamily: 'var(--font-mono)' }}>{targetColumn}</strong> •
             Protected: {sensitiveAttrs.map(a => <span key={a} className="badge badge-purple" style={{ marginLeft: '6px' }}>{a}</span>)}
           </p>

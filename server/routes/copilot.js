@@ -1,5 +1,5 @@
 import express from 'express'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import Groq from 'groq-sdk'
 
 const router = express.Router()
 
@@ -14,32 +14,39 @@ router.post('/chat', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' })
     }
 
-    const apiKey = process.env.GEMINI_API_KEY
+    const apiKey = process.env.GROQ_API_KEY
 
-    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+    if (!apiKey || apiKey === 'your_groq_api_key_here') {
       const response = generateLocalResponse(message, context)
       return res.json({ success: true, response, source: 'local' })
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+    const groq = new Groq({ apiKey })
 
     const contextStr = context ? `\n\nUser's current context:\n${JSON.stringify(context, null, 2)}` : ''
-    const prompt = `${SYSTEM_PROMPT}${contextStr}\n\nUser question: ${message}`
 
-    const result = await model.generateContent(prompt)
-    const response = result.response.text()
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT + contextStr },
+        { role: 'user', content: message }
+      ],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.7,
+      max_tokens: 1024
+    })
 
-    if (!response) throw new Error('Empty response from Gemini')
+    const response = chatCompletion.choices[0]?.message?.content
 
-    res.json({ success: true, response, source: 'gemini' })
+    if (!response) throw new Error('Empty response from Groq')
+
+    res.json({ success: true, response, source: 'groq' })
   } catch (err) {
-    console.error('❌ Copilot Gemini Error:', err.message || err);
+    console.error('❌ Copilot Groq Error:', err.message || err);
     if (err.status) console.error('Status:', err.status);
     
-    // Check for rate limits or other common errors to provide better feedback
-    let errorType = 'gemini-error';
-    if (err.message?.includes('429') || err.message?.includes('quota')) {
+    // Check for common errors
+    let errorType = 'groq-error';
+    if (err.message?.includes('429') || err.message?.includes('rate')) {
       errorType = 'rate-limit';
     } else if (err.message?.includes('401') || err.message?.includes('key')) {
       errorType = 'invalid-key';
@@ -86,8 +93,8 @@ function generateLocalResponse(question, context) {
   // Handle identity questions
   if (q.match(/\b(who are you|what are you|what do you do)\b/)) {
     return isHindi 
-      ? "मैं FairLens Copilot हूँ, एक AI असिस्टेंट जिसे आपको एआई पूर्वाग्रहों को पहचानने और सुधारने में मदद करने के लिए डिज़ाइन किया गया है। (नोट: पूरी क्षमताओं के लिए अपना Gemini API key डालें!)"
-      : "I am the FairLens Copilot, an AI assistant built to help you measure, discover, and remediate AI bias in your datasets. *(Note: Please add your Gemini API Key in .env to unlock full conversational AI!)*"
+      ? "मैं FairLens Copilot हूँ, एक AI असिस्टेंट जिसे आपको एआई पूर्वाग्रहों को पहचानने और सुधारने में मदद करने के लिए डिज़ाइन किया गया है।"
+      : "I am the FairLens Copilot, an AI assistant built to help you measure, discover, and remediate AI bias in your datasets."
   }
 
   // Handle remediation suggestions specifically
@@ -124,8 +131,8 @@ function generateLocalResponse(question, context) {
   }
 
   return isHindi 
-    ? "मुझे माफ़ करें, मैं इस प्रश्न का सटीक उत्तर नहीं दे सकता। चूंकि यह ऑफ़लाइन मोड है, मैं केवल पूर्वाग्रह मेट्रिक्स से संबंधित बुनियादी प्रश्नों का उत्तर दे सकता हूँ। पूर्ण AI अनुभव के लिए कृपया अपना Gemini API Key जोड़ें।"
-    : `(Offline Mode)\n\nI can't fully answer that without an active Gemini API Key. Currently, I can only explain basic concepts like "Disparate Impact" or "4/5ths Rule". \n\n**To get open-ended AI answers, please update the GEMINI_API_KEY in your .env file!**`
+    ? "मुझे माफ़ करें, मैं इस प्रश्न का सटीक उत्तर नहीं दे सकता। चूंकि यह ऑफ़लाइन मोड है, मैं केवल पूर्वाग्रह मेट्रिक्स से संबंधित बुनियादी प्रश्नों का उत्तर दे सकता हूँ। पूर्ण AI अनुभव के लिए कृपया अपना API Key जोड़ें।"
+    : `(Offline Mode)\n\nI can't fully answer that without an active API connection. Currently, I can only explain basic concepts like "Disparate Impact" or "4/5ths Rule". \n\n**To get open-ended AI answers, please ensure your GROQ_API_KEY is set in the .env file!**`
 }
 
 export default router

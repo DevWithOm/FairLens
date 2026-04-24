@@ -6,32 +6,50 @@ export default function LandingTab({ onAuth }) {
   const { t } = useData()
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+    <div style={{ width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)' }}>
       
       {/* ── High-Impact Hero Section ── */}
-      <div className="card-glass fade-in-up" style={{ padding: '60px 40px', position: 'relative', overflow: 'hidden' }}>
+      <div className="fade-in-up" style={{ minHeight: '100vh', width: '100%', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        
+        {/* Cinematic Background Video */}
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="absolute inset-0 w-full h-full object-cover z-0" 
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, opacity: 0.6 }}
+        >
+          <source src="https://res.cloudinary.com/dfonotyfb/video/upload/v1775585556/dds3_1_rqhg7x.mp4" type="video/mp4" />
+        </video>
+
+        {/* Dark Gradient Overlay for readability and cinematic vibe */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to bottom, rgba(10,10,10,0.85) 0%, rgba(10,10,10,0.4) 50%, rgba(10,10,10,1) 100%)', zIndex: 1 }} />
+
         {/* Holographic Background effects */}
         <div style={{
           position: 'absolute',
-          top: '-50%', left: '-20%',
+          top: '10%', left: '0%',
           width: '500px', height: '500px',
           background: 'var(--gradient-primary)',
-          filter: 'blur(100px)', opacity: 0.1,
+          filter: 'blur(120px)', opacity: 0.15,
           borderRadius: '50%',
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          zIndex: 1
         }} />
         <div className="float-anim delay-1" style={{
           position: 'absolute',
-          bottom: '10%', right: '10%',
-          width: '200px', height: '200px',
+          bottom: '10%', right: '0%',
+          width: '400px', height: '400px',
           background: 'var(--accent-blue)',
-          filter: 'blur(80px)', opacity: 0.15,
+          filter: 'blur(100px)', opacity: 0.15,
           borderRadius: '50%',
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          zIndex: 1
         }} />
 
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', zIndex: 1, position: 'relative' }}>
-          <div className="bias-heartbeat" style={{ justifyContent: 'center', marginBottom: '24px', height: '48px' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center', zIndex: 2, position: 'relative', padding: '0 20px' }}>
+          <div className="bias-heartbeat" style={{ justifyContent: 'center', marginBottom: '32px', height: '48px' }}>
              <div className="bar" style={{ width: '4px', height: '100%' }} />
              <div className="bar" style={{ width: '4px', height: '100%' }} />
              <div className="bar" style={{ width: '4px', height: '100%' }} />
@@ -40,25 +58,26 @@ export default function LandingTab({ onAuth }) {
              <div className="bar" style={{ width: '4px', height: '100%' }} />
           </div>
           
-          <div style={{ marginBottom: '32px' }}>
+          <div style={{ marginBottom: '40px' }}>
             <FairLensLogo size="large" layout="vertical" />
           </div>
           
           <p className="fade-in-up stagger-1" style={{ 
-            fontSize: '1.25rem', 
-            color: 'var(--text-secondary)',
-            marginBottom: '40px',
+            fontSize: '1.35rem', 
+            color: 'rgba(255, 255, 255, 0.9)',
+            marginBottom: '56px',
             lineHeight: 1.6,
-            fontWeight: 400
+            fontWeight: 400,
+            textShadow: '0 4px 30px rgba(0,0,0,0.8)'
           }}>
             {t("Next-Generation AI Bias Auditor. Detect, Measure, and Remediate bias within your datasets before they hit production.")}
           </p>
 
-          <div className="fade-in-up stagger-2" style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+          <div className="fade-in-up stagger-2" style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
             <button 
               className="btn btn-primary btn-lg pulse-ring" 
               onClick={() => onAuth('inspect')}
-              style={{ fontWeight: 600, padding: '16px 40px', fontSize: '1.125rem' }}
+              style={{ fontWeight: 600, padding: '16px 48px', fontSize: '1.125rem', letterSpacing: '0.02em' }}
             >
               <Zap size={20} />
               {t("Initialize Audit")}
@@ -66,6 +85,9 @@ export default function LandingTab({ onAuth }) {
           </div>
         </div>
       </div>
+
+      {/* ── Content Below Hero ── */}
+      <div style={{ padding: '60px 48px', display: 'flex', flexDirection: 'column', gap: '48px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
 
       {/* ── 3D Feature Flip Cards ── */}
       <h2 className="fade-in-up stagger-3" style={{ fontSize: '1.5rem', fontWeight: 700, margin: '16px 0 0', textAlign: 'center' }}>
@@ -139,6 +161,7 @@ export default function LandingTab({ onAuth }) {
          </span>
       </div>
 
+      </div>
     </div>
   )
 }

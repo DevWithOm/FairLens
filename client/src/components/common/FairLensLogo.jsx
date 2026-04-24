@@ -37,7 +37,8 @@ export function FairLensLogo({ size = 'medium', showText = true, layout = 'horiz
             width: iconSize, 
             height: iconSize, 
             objectFit: 'contain',
-            mixBlendMode: 'screen'
+            mixBlendMode: 'screen',
+            filter: 'grayscale(100%) sepia(100%) hue-rotate(5deg) saturate(120%) brightness(110%) opacity(0.9)'
           }} 
         />
       </div>
@@ -48,16 +49,17 @@ export function FairLensLogo({ size = 'medium', showText = true, layout = 'horiz
             fontSize: fontSize,
             letterSpacing: '-0.02em',
             lineHeight: 1,
-            color: '#ccff00',
-            margin: 0
+            color: '#e5dfd3',
+            margin: 0,
+            fontFamily: 'var(--font-heading)'
           }}>
             <span style={{ fontWeight: 800 }}>Fair</span>
             <span style={{ fontWeight: 400 }}>Lens</span>
           </h1>
           <p style={{
             fontSize: subfontSize,
-            color: '#ccff00',
-            fontWeight: 400,
+            color: '#c9c5ba',
+            fontWeight: 500,
             letterSpacing: '0.25em',
             textTransform: 'uppercase',
             margin: '4px 0 0 0',

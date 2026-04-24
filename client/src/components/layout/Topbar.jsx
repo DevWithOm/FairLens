@@ -27,8 +27,9 @@ export default function Topbar({ onToggleSidebar, onToggleCopilot, copilotOpen, 
               <div className="bar" style={{ height: '100%' }} />
             </div>
             <span style={{
-              fontSize: '0.8125rem',
-              color: 'var(--text-secondary)',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: 'var(--text-primary)',
               fontFamily: 'var(--font-mono)'
             }}>
               {datasetName}
