@@ -1,137 +1,381 @@
-# FairLens — AI Bias Detection & Remediation Platform
+<div align="center">
 
-> Clinical-grade AI fairness auditor for detecting, measuring, and remediating algorithmic bias.
+# ⚖️ FairLens
 
-![FairLens](https://img.shields.io/badge/FairLens-v1.0-blue) ![Google Solution Challenge](https://img.shields.io/badge/Google-Solution%20Challenge%202026-4285F4)
+### Clinical-Grade AI Fairness Auditor
 
-## 🏗️ Project Structure
+**Detect · Measure · Remediate · Report — Algorithmic Bias**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-A3E635.svg?style=flat-square)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI_Powered-4285F4?style=flat-square&logo=google&logoColor=white)](https://ai.google.dev)
+[![Google Solution Challenge](https://img.shields.io/badge/Google-Solution_Challenge_2026-EA4335?style=flat-square&logo=google&logoColor=white)](#)
+
+<br />
+
+FairLens is a next-generation web platform that empowers data scientists, ML engineers, and compliance officers to **audit, understand, and fix** algorithmic bias in machine learning datasets and models — before they ever reach production.
+
+[Getting Started](#-getting-started) · [Features](#-features) · [Architecture](#-architecture) · [API Reference](#-api-reference) · [Deployment](#-deployment) · [Contributing](#-contributing)
+
+</div>
+
+---
+
+## 🧬 Why FairLens?
+
+AI models increasingly make life-altering decisions — approving loans, screening job candidates, diagnosing medical conditions. These models learn from historical data that **inherently contains human biases**, leading to unfair outcomes for underrepresented groups.
+
+| Problem | How FairLens Solves It |
+|---|---|
+| **Hidden Disparities** — Demographic imbalances in datasets are invisible without specialized tooling | Visual data profiling with automated sensitive-attribute detection |
+| **Complex Remediation** — Fixing bias requires deep statistical knowledge (re-weighting, suppression, calibration) | One-click remediation strategies with AI-guided recommendations |
+| **Black-Box Auditing** — Generating compliance-ready reports is a manual, error-prone process | Automated audit report generation with exportable PDF/Markdown output |
+| **No Model-Level Insight** — Most tools stop at the data layer; model predictions can amplify bias | Built-in ML engine with per-group fairness metrics on model predictions |
+
+---
+
+## ✨ Features
+
+### 📊 Inspect
+Upload CSV datasets or load curated sample scenarios (HR hiring, loan approval, medical diagnosis, criminal justice). The platform auto-parses columns and identifies likely sensitive attributes.
+
+### ⚖️ Measure
+Computes industry-standard fairness metrics in real-time:
+- **Disparate Impact Ratio** (80% rule / four-fifths rule)
+- **Statistical Parity Difference**
+- **Equalized Odds**
+- **Per-group TPR, FPR, Precision & Accuracy**
+
+Results are rendered through animated gauges, demographic distribution charts, and decision tree visualizations.
+
+### 🔧 Fix (Remediate)
+The core differentiator — FairLens doesn't just flag problems, it **fixes them**:
+- **Re-weighting** — Adjusts sample weights to equalize group outcome rates
+- **Proxy Removal** — Identifies and suppresses proxy features correlated with protected attributes
+- **Calibrated Resampling** — Combines oversampling with model regularization
+- **AI-Powered Recommendations** — Google Gemini analyzes bias context and suggests optimal strategies
+
+### 📄 Report
+One-click generation of compliance-ready audit reports:
+- Full bias analysis breakdown with before/after metrics
+- Remediation strategies applied and their impact
+- Exportable as **PDF** or **Markdown**
+
+### 🤖 AI Copilot
+Built-in generative AI assistant powered by Google Gemini:
+- Explain complex statistical concepts in plain language
+- Debug fairness issues in your pipeline
+- Scan LLM prompts for non-inclusive language
+
+### 🧠 ML Model Engine
+Server-side ensemble decision tree classifier (Bagging):
+- Automatic label encoding, missing-value imputation, train/test splitting
+- Adaptive hyperparameter tuning based on dataset size
+- Per-group fairness metrics computed on model predictions
+- Feature importance analysis via point-biserial correlation
+
+---
+
+## 🏗 Architecture
 
 ```
-FairLens/
-├── client/                 # React Frontend (Vite)
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── layout/     # Sidebar, Topbar
-│   │   │   ├── tabs/       # Inspect, Measure, Fix, Report
-│   │   │   └── copilot/    # AI Copilot Panel
-│   │   ├── lib/            # API client helpers
-│   │   ├── App.jsx         # Root component
-│   │   └── index.css       # Design system
-│   ├── public/             # Static assets + sample datasets
-│   └── package.json
-│
-├── server/                 # Express Backend
-│   ├── routes/
-│   │   ├── analysis.js     # Bias analysis & remediation APIs
-│   │   ├── copilot.js      # Gemini AI chat (secure)
-│   │   └── datasets.js     # Dataset loading APIs
-│   ├── index.js            # Server entry point
-│   └── package.json
-│
-├── Datasets/               # Sample CSV datasets
-│   ├── hr_dataset.csv
-│   ├── loan_dataset.csv
-│   └── medical_dataset.csv
-│
-├── .env                    # Environment variables (API keys)
-├── package.json            # Root monorepo scripts
-└── README.md
+┌──────────────────────────────────────────────────────────────────┐
+│                        CLIENT (React 19 + Vite)                  │
+│                                                                  │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐            │
+│  │ Inspect  │ │ Measure  │ │   Fix    │ │  Report  │            │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘            │
+│       │             │            │             │                  │
+│  ┌────▼─────────────▼────────────▼─────────────▼──────────────┐  │
+│  │              API Client (lib/api.js)                        │  │
+│  └────────────────────────┬───────────────────────────────────┘  │
+└───────────────────────────┼──────────────────────────────────────┘
+                            │  REST API
+┌───────────────────────────▼──────────────────────────────────────┐
+│                     SERVER (Node.js + Express)                    │
+│                                                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │  /analysis   │  │  /copilot    │  │  /datasets   │           │
+│  │  Bias engine │  │  Gemini AI   │  │  CSV loader  │           │
+│  └──────┬───────┘  └──────┬───────┘  └──────────────┘           │
+│         │                 │                                      │
+│  ┌──────▼───────┐  ┌──────▼───────┐                             │
+│  │  ML Engine   │  │ Google       │                             │
+│  │  (Ensemble   │  │ Gemini API   │                             │
+│  │  Bagging)    │  │              │                             │
+│  └──────────────┘  └──────────────┘                             │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-## 🚀 Quick Start
+### Tech Stack
 
-### 1. Install Dependencies
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19, Vite 6, Recharts, Lucide Icons, PapaParse |
+| **Styling** | Custom design system ("Obsidian & Dune") with CSS Variables + Tailwind CSS 4 |
+| **Backend** | Node.js 20+, Express 4 |
+| **ML Engine** | ml-cart (Decision Trees), ml-confusion-matrix, Ensemble Bagging |
+| **AI** | Google Gemini (`@google/generative-ai`) |
+| **Export** | jsPDF, html2canvas |
+| **Deployment** | Docker, Render, Firebase Hosting |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** ≥ 20.x
+- **npm** ≥ 10.x
+- A **Google Gemini API key** ([Get one here](https://ai.google.dev))
+
+### 1. Clone the repository
 
 ```bash
-# Install both client and server dependencies
+git clone https://github.com/DevWithOm/FairLens.git
+cd FairLens
+```
+
+### 2. Install dependencies
+
+```bash
+# Install all dependencies (client + server)
+npm run install:all
+
+# Or install individually
 cd client && npm install
 cd ../server && npm install
 ```
 
-### 2. Configure Environment
+### 3. Configure environment
 
-Create a `.env` file in the root:
+Create a `.env` file in the project root:
 
 ```env
+# ──── AI Configuration ────
 GEMINI_API_KEY=your_gemini_api_key_here
+
+# ──── Server Configuration ────
 PORT=5000
 NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 ```
 
-### 3. Run Development Servers
+### 4. Start development servers
 
 ```bash
-# Terminal 1: Start backend
+# Terminal 1 — Backend API
 cd server
 npm run dev
 
-# Terminal 2: Start frontend
+# Terminal 2 — Frontend
 cd client
 npm run dev
 ```
 
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:5000
+| Service | URL |
+|---|---|
+| Frontend | `http://localhost:5173` |
+| Backend API | `http://localhost:5000` |
+| Health Check | `http://localhost:5000/api/health` |
+
+---
+
+## 📡 API Reference
+
+### Core Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/health` | Health check + version info |
+| `GET` | `/api/datasets` | List all available sample datasets |
+| `GET` | `/api/datasets/:id` | Load a specific dataset by ID |
+| `POST` | `/api/analysis/bias` | Run bias analysis on a dataset |
+| `POST` | `/api/analysis/remediate` | Apply a remediation strategy |
+| `POST` | `/api/analysis/report` | Generate an audit report |
+| `POST` | `/api/copilot/chat` | Send a message to the AI Copilot |
+
+### Diagnostics
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/debug/config` | View loaded configuration (masked keys) |
+
+### Example Request
+
+```bash
+# Check API health
+curl http://localhost:5000/api/health
+
+# Run bias analysis
+curl -X POST http://localhost:5000/api/analysis/bias \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": [...],
+    "targetColumn": "Hired",
+    "sensitiveAttributes": ["Gender", "Race"]
+  }'
+```
+
+---
 
 ## 📦 Deployment
 
-### Option A: Render / Railway (Recommended)
+### Option A: Render (Recommended)
 
-1. **Build the client**:
-   ```bash
-   cd client && npm run build
-   ```
+FairLens includes a pre-configured [`render.yaml`](render.yaml) for one-click deployment:
 
-2. **Deploy the server** (it serves the client build in production):
-   ```bash
-   cd server
-   NODE_ENV=production npm start
-   ```
-
-   The server automatically serves `client/dist/` when `NODE_ENV=production`.
-
-3. Set environment variables on your hosting platform:
+1. Push your repo to GitHub
+2. Connect the repo on [Render Dashboard](https://dashboard.render.com)
+3. Render will auto-detect the `render.yaml` blueprint
+4. Set the following environment variables:
    - `GEMINI_API_KEY`
-   - `PORT` (usually auto-set)
-   - `NODE_ENV=production`
+   - `CLIENT_URL` (your frontend URL)
 
-### Option B: Vercel (Frontend) + Render (Backend)
-
-1. Deploy `client/` to Vercel
-2. Deploy `server/` to Render
-3. Update `client/.env` with the production API URL:
-   ```
-   VITE_API_URL=https://your-backend.onrender.com/api
-   ```
-
-### Option C: Docker
+### Option B: Docker
 
 ```bash
+# Build the image
 docker build -t fairlens .
-docker run -p 5000:5000 --env-file .env fairlens
+
+# Run the container
+docker run -p 8080:8080 \
+  -e GEMINI_API_KEY=your_key \
+  -e NODE_ENV=production \
+  fairlens
 ```
 
-## 🔑 API Endpoints
+### Option C: Manual Deploy (Vercel + Render)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Health check |
-| GET | `/api/datasets` | List sample datasets |
-| GET | `/api/datasets/:id` | Load a specific dataset |
-| POST | `/api/analysis/bias` | Run bias analysis |
-| POST | `/api/analysis/remediate` | Apply remediation strategy |
-| POST | `/api/analysis/report` | Generate audit report |
-| POST | `/api/copilot/chat` | AI copilot chat |
+| Component | Platform | Directory |
+|---|---|---|
+| Frontend | Vercel | `client/` |
+| Backend | Render | `server/` |
 
-## 🛡️ Features
+1. Deploy `client/` to **Vercel** — set `VITE_API_URL` to your backend URL
+2. Deploy `server/` to **Render** — set `GEMINI_API_KEY` and `CLIENT_URL`
 
-- **Inspect**: Upload CSV or load sample datasets, configure sensitive attributes
-- **Measure**: Disparate Impact, Statistical Parity, animated gauges & charts
-- **Fix**: Re-weighting, Re-sampling, Threshold Adjustment, Feature Suppression
-- **Report**: Markdown/JSON audit reports with compliance summary
-- **Copilot**: AI assistant powered by Google Gemini
+---
 
-## 📄 License
+## 📂 Project Structure
 
-MIT
+```
+FairLens/
+├── client/                          # React Frontend (Vite 6)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── common/              # Shared UI components
+│   │   │   ├── copilot/             # AI Copilot panel
+│   │   │   ├── inspect/             # Data upload & profiling
+│   │   │   ├── layout/              # Sidebar, Topbar, shell
+│   │   │   ├── measure/             # Fairness metrics & charts
+│   │   │   ├── report/              # Audit report generation
+│   │   │   └── tabs/                # Tab navigation system
+│   │   ├── lib/                     # API client & utilities
+│   │   ├── App.jsx                  # Root component & routing
+│   │   └── index.css                # Design system tokens
+│   └── public/                      # Static assets & sample data
+│
+├── server/                          # Express.js Backend
+│   ├── routes/
+│   │   ├── analysis.js              # Bias computation & remediation
+│   │   ├── copilot.js               # Gemini AI integration
+│   │   └── datasets.js              # Dataset management
+│   ├── ml/
+│   │   └── modelEngine.js           # Ensemble ML engine (Bagging)
+│   └── index.js                     # Server entry point
+│
+├── Datasets/                        # Curated sample datasets
+│   ├── hiring_bias_15k.csv          # HR hiring decisions (15K rows)
+│   ├── loan_bias_10k.csv            # Loan approvals (10K rows)
+│   ├── medical_bias_12k.csv         # Medical diagnosis (12K rows)
+│   ├── justice_bias_10k.csv         # Criminal justice (10K rows)
+│   └── ...                          # Additional datasets
+│
+├── Dockerfile                       # Production container config
+├── render.yaml                      # Render deployment blueprint
+├── firebase.json                    # Firebase hosting config
+└── package.json                     # Monorepo scripts
+```
+
+---
+
+## 🔄 Data Flow
+
+```
+┌─────────────────┐     CSV Upload      ┌─────────────────┐
+│                 │ ──────────────────▶  │                 │
+│   User          │                      │   React Client  │
+│   (Data         │  ◀────────────────── │   (PapaParse    │
+│   Scientist)    │   Visual Charts      │    parsing)     │
+│                 │   & Gauges           │                 │
+└─────────────────┘                      └────────┬────────┘
+                                                  │
+                                         Schema + │ Attributes
+                                                  ▼
+                                         ┌─────────────────┐
+                                         │                 │
+                                         │  Express API    │
+                                         │  (Statistical   │
+                                         │   Engine)       │
+                                         │                 │
+                                         └───────┬─────────┘
+                                                 │
+                                    ┌────────────┼────────────┐
+                                    ▼                         ▼
+                           ┌──────────────┐         ┌──────────────┐
+                           │  ML Engine   │         │ Google       │
+                           │  (Ensemble   │         │ Gemini API   │
+                           │   Bagging)   │         │              │
+                           └──────────────┘         └──────────────┘
+```
+
+1. **Ingestion** — CSV parsed client-side via PapaParse (zero server load)
+2. **Analysis** — Backend computes Disparate Impact, Statistical Parity, Equalized Odds
+3. **ML Training** — Ensemble bagging classifier with per-group fairness metrics
+4. **AI Remediation** — Gemini receives bias context and returns optimization strategies
+5. **Reporting** — Results compiled into exportable PDF/Markdown audit reports
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'feat: add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Commit Convention
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/):
+
+| Prefix | Description |
+|---|---|
+| `feat:` | New feature |
+| `fix:` | Bug fix |
+| `docs:` | Documentation change |
+| `style:` | Code style (formatting, no logic change) |
+| `refactor:` | Code restructuring |
+| `test:` | Adding or updating tests |
+| `chore:` | Tooling, dependencies, configs |
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+**Built with ❤️ for the Google Solution Challenge 2026**
+
+[⬆ Back to Top](#️-fairlens)
+
+</div>
