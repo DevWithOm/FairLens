@@ -374,13 +374,25 @@ export default function FixTab() {
     setSelectedStrategy(strategy.id)
     setMlComparison(null)
 
+    // Minimize payload size by selecting only targetColumn, sensitiveAttrs, and feature columns
+    const neededColumns = new Set([targetColumn, ...sensitiveAttrs, ...columns])
+    const minimizedRows = rows.map(r => {
+      const minimizedRow = {}
+      neededColumns.forEach(col => {
+        if (r[col] !== undefined) {
+          minimizedRow[col] = r[col]
+        }
+      })
+      return minimizedRow
+    })
+
     // Try real ML remediation first
     try {
       const resp = await fetch(API_URL + '/analysis/remediate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          rows, columns, sensitiveAttrs, targetColumn,
+          rows: minimizedRows, columns, sensitiveAttrs, targetColumn,
           strategy: strategy.id
         })
       })

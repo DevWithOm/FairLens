@@ -258,11 +258,23 @@ export default function MeasureTab() {
   // Train ML model after statistical analysis
   const trainMLModel = useCallback(async () => {
     setTrainingModel(true)
+    // Minimize payload size by selecting only targetColumn, sensitiveAttrs, and feature columns
+    const neededColumns = new Set([targetColumn, ...sensitiveAttrs, ...columns])
+    const minimizedRows = rows.map(r => {
+      const minimizedRow = {}
+      neededColumns.forEach(col => {
+        if (r[col] !== undefined) {
+          minimizedRow[col] = r[col]
+        }
+      })
+      return minimizedRow
+    })
+
     try {
       const resp = await fetch(API_URL + '/analysis/train', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rows, columns, sensitiveAttrs, targetColumn })
+        body: JSON.stringify({ rows: minimizedRows, columns, sensitiveAttrs, targetColumn })
       })
       if (resp.ok) {
         const data = await resp.json()
