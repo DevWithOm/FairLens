@@ -663,11 +663,6 @@ export default function FixTab() {
                     }}>
                       {simResult.improvement > 0 ? '+' : ''}{simResult.improvement}% {t('DI improvement')}
                     </div>
-                    {simResult.modelPayload && (
-                      <button className="btn btn-primary btn-sm" onClick={handleDownloadModel}>
-                        <Download size={14} /> {t('Download Debiased Model')}
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>

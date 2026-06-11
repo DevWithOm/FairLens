@@ -28,10 +28,17 @@ export default function IntersectionalMatrix({ rows, sensitiveAttrs, targetColum
       try {
         setIsLoading(true);
         setError(null);
+        // Minimize payload by sending only the relevant columns to avoid payload size limits (e.g. 413 Payload Too Large)
+        const minimizedData = rows.map(r => ({
+          [attribute1]: r[attribute1],
+          [attribute2]: r[attribute2],
+          [targetColumn]: r[targetColumn]
+        }));
+
         const res = await fetch(`${API_URL}/analysis/intersectional`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: rows, attribute1, attribute2, targetColumn, positiveOutcome })
+          body: JSON.stringify({ data: minimizedData, attribute1, attribute2, targetColumn, positiveOutcome })
         });
         if (!res.ok) throw new Error('Failed to fetch intersectional data');
         const result = await res.json();

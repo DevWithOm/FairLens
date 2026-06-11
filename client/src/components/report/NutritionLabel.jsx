@@ -12,7 +12,7 @@ export default function NutritionLabel({ datasetName, rows, columns, sensitiveAt
   const sp = firstResult?.statisticalParity || 0
   const biasLevel = firstResult?.biasLevel || 'unknown'
   const passes = di >= 0.8
-  const fairScore = Math.round((1 - sp) * 100)
+  const fairScore = Math.round(di * 100)
 
   const riskLevel = biasLevel === 'low' ? 'Low' : biasLevel === 'moderate' ? 'Medium' : 'High'
   const riskColor = biasLevel === 'low' ? '#48BB78' : biasLevel === 'moderate' ? '#ECC94B' : '#FC8181'

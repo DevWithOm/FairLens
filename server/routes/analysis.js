@@ -326,43 +326,70 @@ router.post('/intersectional', (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const attr1Values = [...new Set(data.map(row => String(row[attribute1] ?? 'Unknown')))];
-    const attr2Values = [...new Set(data.map(row => String(row[attribute2] ?? 'Unknown')))];
+    const validData = Array.isArray(data) ? data.filter(Boolean) : [];
 
     const matrix = {};
-    let bestGroup = null;
-    let worstGroup = null;
+    const attr1Set = new Set();
+    const attr2Set = new Set();
 
+    // Single pass to aggregate counts and positive counts O(N)
+    validData.forEach(row => {
+      const v1 = String(row[attribute1] ?? 'Unknown');
+      const v2 = String(row[attribute2] ?? 'Unknown');
+      attr1Set.add(v1);
+      attr2Set.add(v2);
+
+      const key = `${v1}_${v2}`;
+      if (!matrix[key]) {
+        matrix[key] = {
+          label: `${v1} + ${v2}`,
+          positiveCount: 0,
+          count: 0
+        };
+      }
+
+      matrix[key].count++;
+
+      const outcome = row[targetColumn];
+      const isPos = outcome === 1 || outcome === '1' || outcome === 'Yes' || outcome === 'yes' ||
+                    outcome === true || outcome === 'Approved' || outcome === 'approved' ||
+                    outcome === 'Selected' || outcome === 'selected' || outcome === 'Hired' || outcome === 'hired';
+      if (isPos || (outcome !== undefined && outcome !== null && String(outcome).toLowerCase() === String(positiveOutcome).toLowerCase())) {
+        matrix[key].positiveCount++;
+      }
+    });
+
+    const attr1Values = [...attr1Set];
+    const attr2Values = [...attr2Set];
+
+    // Compute rates, ratios, bestGroup, and fill missing combinations with 0 O(A1 * A2)
+    let bestGroup = null;
     for (const v1 of attr1Values) {
       for (const v2 of attr2Values) {
         const key = `${v1}_${v2}`;
-        const label = `${v1} + ${v2}`;
-        
-        const filtered = data.filter(r => String(r[attribute1] ?? 'Unknown') === v1 && String(r[attribute2] ?? 'Unknown') === v2);
-        const count = filtered.length;
-        
-        let positiveCount = 0;
-        filtered.forEach(r => {
-          const outcome = r[targetColumn];
-          const isPos = outcome === 1 || outcome === '1' || outcome === 'Yes' || outcome === 'yes' ||
-                        outcome === true || outcome === 'Approved' || outcome === 'approved' ||
-                        outcome === 'Selected' || outcome === 'selected' || outcome === 'Hired' || outcome === 'hired';
-          if (isPos || String(outcome).toLowerCase() === String(positiveOutcome).toLowerCase()) {
-            positiveCount++;
-          }
-        });
-        
-        const rate = count > 0 ? positiveCount / count : 0;
-        
-        matrix[key] = { label, rate, count, ratio: 0 };
-        
-        if (!bestGroup || rate > bestGroup.rate) {
-          bestGroup = { label, rate, count, key };
+        if (!matrix[key]) {
+          matrix[key] = {
+            label: `${v1} + ${v2}`,
+            rate: 0,
+            count: 0,
+            ratio: 0
+          };
+        } else {
+          const cell = matrix[key];
+          cell.rate = cell.count > 0 ? cell.positiveCount / cell.count : 0;
+          cell.ratio = 0;
+          delete cell.positiveCount; // Clean up temp property
+        }
+
+        const cell = matrix[key];
+        if (!bestGroup || cell.rate > bestGroup.rate) {
+          bestGroup = { label: cell.label, rate: cell.rate, count: cell.count, key };
         }
       }
     }
 
     const bestRate = bestGroup?.rate || 1;
+    let worstGroup = null;
     let maxDisparity = 0;
 
     for (const key in matrix) {
