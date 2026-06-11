@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { useData } from '../../lib/DataContext'
+import { useToast } from '../common/ToastSystem'
 import {
   Wrench, Play, AlertTriangle, CheckCircle,
   ArrowRight, RefreshCw, TrendingUp, SlidersHorizontal,
@@ -11,6 +12,7 @@ import {
 } from 'recharts'
 import { isPositive } from '../../lib/biasEngine'
 import MetricExplainer from '../measure/MetricExplainer'
+import BeforeAfterHero from '../fix/BeforeAfterHero'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 const CHART_COLORS = ['#63B3ED', '#38B2AC', '#48BB78', '#ECC94B', '#ED8936', '#FC8181', '#B794F4', '#F687B3']
@@ -100,6 +102,7 @@ function CustomTooltip({ active, payload, label }) {
 // ═══════════════════════════════════════════════════
 function PlainEnglishSuggestions({ simResult, analysisResults, language }) {
   const { t } = useData()
+  const toast = useToast()
   const [suggestions, setSuggestions] = useState(null)
   const [loading, setLoading] = useState(false)
   const [expanded, setExpanded] = useState(true)
@@ -118,7 +121,7 @@ function PlainEnglishSuggestions({ simResult, analysisResults, language }) {
       ).join(', ')
     }
 
-    const prompt = language === 'hindi'
+    const prompt = language === 'hi'
       ? 'You are an AI fairness expert. Given this bias remediation result, provide exactly 3 plain-language action steps in Hindi that a non-technical stakeholder can take. Be specific and practical.\n\nResult: ' + JSON.stringify(context) + '\n\nFormat as 3 numbered steps, each 1-2 sentences.'
       : 'You are an AI fairness expert. Given this bias remediation result, provide exactly 3 plain-English action steps a non-technical stakeholder can take. Be specific and practical.\n\nResult: ' + JSON.stringify(context) + '\n\nFormat as 3 numbered steps, each 1-2 sentences. No markdown headers.'
 
@@ -126,7 +129,7 @@ function PlainEnglishSuggestions({ simResult, analysisResults, language }) {
       const resp = await fetch(API_URL + '/copilot/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: prompt, context: { analysisResults } })
+        body: JSON.stringify({ message: prompt, context: { analysisResults }, language })
       })
       if (!resp.ok) throw new Error('API error')
       const data = await resp.json()
@@ -200,7 +203,22 @@ function PlainEnglishSuggestions({ simResult, analysisResults, language }) {
               <Sparkles size={15} style={{ color: 'white' }} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>{t('Plain English Fix Suggestions')}</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>
+                {t('Plain English Fix Suggestions')}
+                {language === 'hi' && (
+                  <span style={{
+                    display: 'inline-block',
+                    background: '#1a0a2e',
+                    color: '#a78bfa',
+                    border: '1px solid #a78bfa',
+                    fontSize: '10px',
+                    borderRadius: '4px',
+                    padding: '1px 6px',
+                    marginLeft: '8px',
+                    verticalAlign: 'middle'
+                  }}>हिंदी</span>
+                )}
+              </h3>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1px' }}>
                 Powered by Gemini AI · Actionable steps for non-technical stakeholders
               </p>
@@ -214,7 +232,7 @@ function PlainEnglishSuggestions({ simResult, analysisResults, language }) {
                 style={{ fontSize: '0.75rem', gap: '5px' }}
                 title="Regenerate suggestions"
               >
-                <RefreshCw size={12} /> Regenerate
+                <RefreshCw size={12} /> {t('Regenerate')}
               </button>
             )}
             <button
@@ -239,8 +257,8 @@ function PlainEnglishSuggestions({ simResult, analysisResults, language }) {
               }}>
                 <Loader2 size={22} className="spin" style={{ color: 'white' }} />
               </div>
-              <p style={{ fontWeight: 600, marginBottom: '4px' }}>Gemini is analyzing your results...</p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>Generating plain-language action steps</p>
+              <p style={{ fontWeight: 600, marginBottom: '4px' }}>{t('Gemini is analyzing your results...')}</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>{t('Generating plain-language action steps')}</p>
             </div>
           ) : suggestions ? (
             <div>
@@ -276,7 +294,7 @@ function PlainEnglishSuggestions({ simResult, analysisResults, language }) {
               }}>
                 <Lightbulb size={14} style={{ color: 'var(--accent-purple)', flexShrink: 0 }} />
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
-                  These suggestions are AI-generated guidance. Always validate with domain experts and legal counsel before deployment.
+                  {t('These suggestions are AI-generated guidance. Always validate with domain experts and legal counsel before deployment.')}
                 </p>
               </div>
             </div>
@@ -292,6 +310,7 @@ function PlainEnglishSuggestions({ simResult, analysisResults, language }) {
 // ═══════════════════════════════════════════════════
 export default function FixTab() {
   const { rows, columns, sensitiveAttrs, targetColumn, analysisResults, remediationResults, setRemediationResults, modelResults, language, t } = useData()
+  const toast = useToast()
   const [selectedStrategy, setSelectedStrategy] = useState(null)
   const [simResult, setSimResult] = useState(null)
   const [applying, setApplying] = useState(false)
@@ -408,7 +427,7 @@ export default function FixTab() {
         }
       }
     } catch (err) {
-      console.warn('ML remediation API unavailable, falling back to simulation:', err.message)
+      toast.info('ML remediation unavailable, using statistical simulation.')
     }
 
     // Fallback: statistical simulation
@@ -454,10 +473,10 @@ export default function FixTab() {
           <Wrench size={36} style={{ color: 'var(--accent-blue)', opacity: 0.5 }} />
         </div>
         <h2 style={{ fontSize: '1.375rem', fontWeight: 700, marginBottom: '8px' }}>
-          No Analysis Available
+          {t('No Analysis Available')}
         </h2>
         <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto' }}>
-          Run bias analysis in the <strong>Measure</strong> tab first to see fix options.
+          {t('Run bias analysis in the Measure tab first to see fix options.')}
         </p>
       </div>
     )
@@ -609,12 +628,30 @@ export default function FixTab() {
 
       {simResult && !applying && (
         <>
+          <div style={{ marginBottom: '32px' }}>
+            <BeforeAfterHero
+              key={simResult.strategy + simResult.newDI}
+              beforeMetrics={{
+                disparateImpact: simResult.origDI,
+                statisticalParity: simResult.origSP,
+                accuracy: mlComparison ? mlComparison.baseline.accuracy : (modelResults?.metrics?.accuracy || 0.85)
+              }}
+              afterMetrics={{
+                disparateImpact: simResult.newDI,
+                statisticalParity: simResult.newSP,
+                accuracy: mlComparison ? mlComparison.remediated.accuracy : ((modelResults?.metrics?.accuracy || 0.85) - 0.02)
+              }}
+              fixName={simResult.strategy}
+              isAnimating={true}
+            />
+          </div>
+
           <div className="card fade-in-up">
             <div className="card-header">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <TrendingUp size={18} style={{ color: 'var(--accent-green)' }} />
-                  <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Before / After — {simResult.strategy}</h3>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>{t('Group Details — ')}{t(simResult.strategy)}</h3>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <div style={{
                       padding: '4px 14px',
@@ -624,7 +661,7 @@ export default function FixTab() {
                       fontWeight: 700,
                       fontSize: '0.875rem'
                     }}>
-                      {simResult.improvement > 0 ? '+' : ''}{simResult.improvement}% DI improvement
+                      {simResult.improvement > 0 ? '+' : ''}{simResult.improvement}% {t('DI improvement')}
                     </div>
                     {simResult.modelPayload && (
                       <button className="btn btn-primary btn-sm" onClick={handleDownloadModel}>
@@ -636,47 +673,6 @@ export default function FixTab() {
               </div>
             </div>
             <div className="card-body">
-              {/* Metric Comparison with Explainer Chips */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '24px', alignItems: 'center', marginBottom: '24px' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Before</p>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
-                  }}>
-                    <span style={{
-                      fontSize: '2rem', fontWeight: 900, fontFamily: 'var(--font-mono)',
-                      color: simResult.origDI >= 0.8 ? 'var(--accent-green)' : 'var(--accent-red)'
-                    }}>
-                      {(simResult.origDI * 100).toFixed(1)}%
-                    </span>
-                    <MetricExplainer metricName="Disparate Impact" value={simResult.origDI} />
-                  </div>
-                  <span className={`badge ${simResult.origScore === 'PASS' ? 'badge-green' : 'badge-red'}`}>
-                    {simResult.origScore === 'PASS' ? '✓' : '✕'} 4/5ths: {simResult.origScore}
-                  </span>
-                  <MetricExplainer metricName="4/5ths Rule" />
-                </div>
-                <ArrowRight size={32} style={{ color: 'var(--accent-teal)' }} />
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>After</p>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
-                    animation: 'fadeInUp 0.5s ease'
-                  }}>
-                    <span style={{
-                      fontSize: '2rem', fontWeight: 900, fontFamily: 'var(--font-mono)',
-                      color: simResult.newDI >= 0.8 ? 'var(--accent-green)' : 'var(--accent-orange)'
-                    }}>
-                      {(simResult.newDI * 100).toFixed(1)}%
-                    </span>
-                    <MetricExplainer metricName="Disparate Impact" value={simResult.newDI} />
-                  </div>
-                  <span className={`badge ${simResult.newScore === 'PASS' ? 'badge-green' : 'badge-orange'}`}>
-                    {simResult.newScore === 'PASS' ? '✓' : '△'} 4/5ths: {simResult.newScore}
-                  </span>
-                </div>
-              </div>
-
               {/* Group Comparison Chart */}
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={simResult.groups.map(g => ({
@@ -708,9 +704,9 @@ export default function FixTab() {
                     <Cpu size={14} style={{ color: 'white' }} />
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '0.9375rem', fontWeight: 700 }}>ML Model Comparison</h3>
+                    <h3 style={{ fontSize: '0.9375rem', fontWeight: 700 }}>{t('ML Model Comparison')}</h3>
                     <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                      Baseline vs Remediated Decision Tree • Trained in {mlComparison.trainingTime}ms
+                      {t('Baseline vs Remediated Decision Tree • Trained in')} {mlComparison.trainingTime}ms
                     </p>
                   </div>
                 </div>
@@ -718,10 +714,10 @@ export default function FixTab() {
               <div className="card-body">
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                   {[
-                    { label: 'Accuracy', before: mlComparison.baseline.accuracy, after: mlComparison.remediated.accuracy, color: '#63B3ED' },
-                    { label: 'Precision', before: mlComparison.baseline.precision, after: mlComparison.remediated.precision, color: '#48BB78' },
-                    { label: 'Recall', before: mlComparison.baseline.recall, after: mlComparison.remediated.recall, color: '#B794F4' },
-                    { label: 'F1 Score', before: mlComparison.baseline.f1, after: mlComparison.remediated.f1, color: '#38B2AC' }
+                    { label: t('Accuracy'), before: mlComparison.baseline.accuracy, after: mlComparison.remediated.accuracy, color: '#63B3ED' },
+                    { label: t('Precision'), before: mlComparison.baseline.precision, after: mlComparison.remediated.precision, color: '#48BB78' },
+                    { label: t('Recall'), before: mlComparison.baseline.recall, after: mlComparison.remediated.recall, color: '#B794F4' },
+                    { label: t('F1 Score'), before: mlComparison.baseline.f1, after: mlComparison.remediated.f1, color: '#38B2AC' }
                   ].map(m => {
                     const delta = ((m.after - m.before) * 100).toFixed(1)
                     return (
@@ -761,7 +757,7 @@ export default function FixTab() {
                     border: '1px solid rgba(236,201,75,0.2)',
                     fontSize: '0.75rem', color: 'var(--text-secondary)'
                   }}>
-                    🧹 Removed proxy features: <strong>{mlComparison.removedProxies.join(', ')}</strong>
+                    🧹 {t('Removed proxy features:')} <strong>{mlComparison.removedProxies.join(', ')}</strong>
                   </div>
                 )}
               </div>
@@ -778,7 +774,7 @@ export default function FixTab() {
               display: 'inline-flex', alignItems: 'center', gap: '6px',
               fontSize: '0.6875rem', color: 'var(--accent-teal)', fontWeight: 600
             }}>
-              <Cpu size={11} /> Results powered by ML model (Decision Tree Classifier)
+              <Cpu size={11} /> {t('Results powered by ML model (Decision Tree Classifier)')}
             </div>
           )}
 

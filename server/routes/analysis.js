@@ -4,6 +4,8 @@ import { trainModel, predictRow, remediate } from '../ml/modelEngine.js'
 
 const router = express.Router()
 
+export const auditStore = new Map()
+
 // In-memory model store (per-session, simple approach)
 let currentModel = null
 
@@ -189,9 +191,52 @@ router.post('/remediate', (req, res) => {
       trainingTime: remediated.trainingTime
     }
 
+    const beforeDI = baselineFairness?.modelDI || 0;
+    const afterDI = remediatedFairness?.modelDI || 0;
+    const beforeAccuracy = baseline.metrics.accuracy || 0;
+    const afterAccuracy = remediated.metrics.accuracy || 0;
+    const beforeSPD = baselineFairness?.statisticalParity || 0;
+    const afterSPD = remediatedFairness?.statisticalParity || 0;
+
+    const diImprovement = afterDI - beforeDI;
+    const accuracyLoss = beforeAccuracy - afterAccuracy;
+    const spdImprovement = beforeSPD - afterSPD;
+
+    let confidenceScore = 60;
+    if (diImprovement > 0.15) confidenceScore += 20;
+    if (accuracyLoss < 0.02) confidenceScore += 10;
+    if (spdImprovement > 0.10) confidenceScore += 10;
+    if (accuracyLoss > 0.05) confidenceScore -= 20;
+    
+    confidenceScore = Math.max(0, Math.min(100, Math.round(confidenceScore)));
+
+    let confidenceLabel = 'Low';
+    if (confidenceScore >= 75) confidenceLabel = 'High';
+    else if (confidenceScore >= 50) confidenceLabel = 'Medium';
+
+    const biasReductionPercent = beforeDI >= 1 ? 0 : Math.round(((afterDI - beforeDI) / (1 - beforeDI)) * 100);
+    const accuracyTradeoff = Math.round(Math.abs(afterAccuracy - beforeAccuracy) * 1000) / 10;
+
+    let recommendation = '';
+    if (confidenceLabel === 'High') {
+      recommendation = "This remediation strategy is recommended. Bias reduced significantly with minimal accuracy impact.";
+    } else if (confidenceLabel === 'Medium') {
+      recommendation = "Moderate improvement achieved. Consider combining with Proxy Removal for better results.";
+    } else {
+      recommendation = "Limited improvement. Try Calibrated Resampling or consult AI Copilot for dataset-specific guidance.";
+    }
+
     console.log(`✅ Remediation complete — DI: ${(baselineFairness?.modelDI * 100).toFixed(1)}% → ${(remediatedFairness?.modelDI * 100).toFixed(1)}%`)
 
-    res.json({ success: true, comparison })
+    res.json({
+      success: true,
+      comparison,
+      confidenceScore,
+      confidenceLabel,
+      biasReductionPercent,
+      accuracyTradeoff,
+      recommendation
+    })
   } catch (err) {
     console.error('❌ Remediation failed:', err.message)
     res.status(500).json({ error: 'Remediation failed: ' + err.message })
@@ -201,17 +246,19 @@ router.post('/remediate', (req, res) => {
 // ── Generate Report (existing) ──
 router.post('/report', async (req, res) => {
   try {
-    const { datasetName, sensitiveAttributes, targetColumn, analysisResults, remediationResults, modelResults } = req.body
+    const { datasetName, sensitiveAttributes, targetColumn, analysisResults, remediationResults, modelResults, localReportText, language } = req.body
     
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-      return res.json({ success: true, source: 'local-fallback', report: null })
+      const auditId = Math.random().toString(36).substring(2, 10).toUpperCase()
+      auditStore.set(auditId, { report: localReportText, metrics: { analysisResults, remediationResults, modelResults }, timestamp: Date.now(), dataset: datasetName })
+      return res.json({ success: true, source: 'local-fallback', report: localReportText, auditId, shareUrl: "/audit/" + auditId })
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
-    const prompt = `You are a professional AI Auditor. Generate a detailed, executive-style fairness audit report for a dataset.
+    let prompt = `You are a professional AI Auditor. Generate a detailed, executive-style fairness audit report for a dataset.
     
     Dataset: ${datasetName}
     Target Column: ${targetColumn}
@@ -231,12 +278,19 @@ router.post('/report', async (req, res) => {
     
     Format using Markdown headers and bullet points. Be highly professional, balanced, and authoritative as if writing a compliance dossier.`
 
+    if (language === 'hi') {
+      prompt = "Respond entirely in Hindi (Devanagari script). Use simple, clear Hindi language. " + prompt
+    }
+
     const result = await model.generateContent(prompt)
     const report = result.response.text()
 
     if (!report) throw new Error('Empty report from AI')
 
-    res.json({ success: true, report, source: 'gemini' })
+    const auditId = Math.random().toString(36).substring(2, 10).toUpperCase()
+    auditStore.set(auditId, { report, metrics: { analysisResults, remediationResults, modelResults }, timestamp: Date.now(), dataset: datasetName })
+
+    res.json({ success: true, report, source: 'gemini', auditId, shareUrl: "/audit/" + auditId })
   } catch (err) {
     console.error('❌ Report Generation Gemini Error:', err.message || err)
     if (err.status) console.error('Status:', err.status)
@@ -248,14 +302,99 @@ router.post('/report', async (req, res) => {
       errorType = 'invalid-key'
     }
 
+    const auditId = Math.random().toString(36).substring(2, 10).toUpperCase()
+    auditStore.set(auditId, { report: null, metrics: { analysisResults, remediationResults, modelResults }, timestamp: Date.now(), dataset: datasetName })
+
     res.json({ 
       success: true, 
       source: 'local-fallback', 
       report: null,
       error: err.message,
-      errorType
+      errorType,
+      auditId,
+      shareUrl: "/audit/" + auditId
     })
   }
 })
+
+// ── Intersectional Bias Analysis ──
+router.post('/intersectional', (req, res) => {
+  try {
+    const { data, attribute1, attribute2, targetColumn, positiveOutcome } = req.body;
+    
+    if (!data || !attribute1 || !attribute2 || !targetColumn || !positiveOutcome) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const attr1Values = [...new Set(data.map(row => String(row[attribute1] ?? 'Unknown')))];
+    const attr2Values = [...new Set(data.map(row => String(row[attribute2] ?? 'Unknown')))];
+
+    const matrix = {};
+    let bestGroup = null;
+    let worstGroup = null;
+
+    for (const v1 of attr1Values) {
+      for (const v2 of attr2Values) {
+        const key = `${v1}_${v2}`;
+        const label = `${v1} + ${v2}`;
+        
+        const filtered = data.filter(r => String(r[attribute1] ?? 'Unknown') === v1 && String(r[attribute2] ?? 'Unknown') === v2);
+        const count = filtered.length;
+        
+        let positiveCount = 0;
+        filtered.forEach(r => {
+          const outcome = r[targetColumn];
+          const isPos = outcome === 1 || outcome === '1' || outcome === 'Yes' || outcome === 'yes' ||
+                        outcome === true || outcome === 'Approved' || outcome === 'approved' ||
+                        outcome === 'Selected' || outcome === 'selected' || outcome === 'Hired' || outcome === 'hired';
+          if (isPos || String(outcome).toLowerCase() === String(positiveOutcome).toLowerCase()) {
+            positiveCount++;
+          }
+        });
+        
+        const rate = count > 0 ? positiveCount / count : 0;
+        
+        matrix[key] = { label, rate, count, ratio: 0 };
+        
+        if (!bestGroup || rate > bestGroup.rate) {
+          bestGroup = { label, rate, count, key };
+        }
+      }
+    }
+
+    const bestRate = bestGroup?.rate || 1;
+    let maxDisparity = 0;
+
+    for (const key in matrix) {
+      const cell = matrix[key];
+      const ratio = bestRate > 0 ? cell.rate / bestRate : 1;
+      const disparity = 1 - ratio;
+      
+      cell.ratio = ratio;
+      
+      if (!worstGroup || disparity > (1 - worstGroup.ratio)) {
+        worstGroup = { ...cell, ratio };
+      }
+      
+      if (disparity > maxDisparity) {
+        maxDisparity = disparity;
+      }
+    }
+
+    res.json({
+      attribute1,
+      attribute2,
+      attr1Values,
+      attr2Values,
+      matrix,
+      worstGroup,
+      bestGroup,
+      maxDisparity
+    });
+  } catch (err) {
+    console.error('❌ Intersectional analysis failed:', err.message);
+    res.status(500).json({ error: 'Intersectional analysis failed' });
+  }
+});
 
 export default router

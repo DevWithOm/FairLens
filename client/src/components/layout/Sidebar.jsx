@@ -2,12 +2,13 @@ import React from 'react'
 import { useData } from '../../lib/DataContext'
 import {
   Search, Eye, BarChart3, Wrench, FileText,
-  Database, ChevronRight, Sparkles, Shield, Aperture
+  Database, ChevronRight, Sparkles, Shield, Aperture, Activity
 } from 'lucide-react'
 import { FairLensLogo } from '../common/FairLensLogo'
 const navItems = [
   { id: 'inspect', label: 'Inspect', icon: Eye, desc: 'Load & explore data' },
   { id: 'measure', label: 'Measure', icon: BarChart3, desc: 'Bias metrics & charts' },
+  { id: 'monitor', label: 'Monitor', icon: Activity, desc: 'Real-time drift alerts' },
   { id: 'fix', label: 'Fix', icon: Wrench, desc: 'Remediate bias' },
   { id: 'report', label: 'Report', icon: FileText, desc: 'Export audit reports' }
 ]

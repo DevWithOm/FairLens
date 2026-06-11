@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 import analysisRoutes from './routes/analysis.js'
 import copilotRoutes from './routes/copilot.js'
 import datasetRoutes from './routes/datasets.js'
+import auditsRoutes from './routes/audits.js'
 
 dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.env') })
 
@@ -37,6 +38,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }))
 app.use('/api/analysis', analysisRoutes)
 app.use('/api/copilot', copilotRoutes)
 app.use('/api/datasets', datasetRoutes)
+app.use('/api/audits', auditsRoutes)
 
 // ── Diagnostics ──
 app.get('/api/debug/config', (req, res) => {

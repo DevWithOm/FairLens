@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { useData } from '../../lib/DataContext'
+import { useToast } from '../common/ToastSystem'
 import Papa from 'papaparse'
 import {
   Upload, FileSpreadsheet, Database, Columns, Rows3,
@@ -26,6 +27,7 @@ export default function InspectTab() {
   const [searchTerm, setSearchTerm] = useState('')
   const [previewPage, setPreviewPage] = useState(0)
   const fileInputRef = useRef(null)
+  const toast = useToast()
   const ROWS_PER_PAGE = 20
 
   const handleFile = useCallback((file) => {
@@ -36,13 +38,22 @@ export default function InspectTab() {
       skipEmptyLines: true,
       dynamicTyping: true,
       complete: (result) => {
+        if (!result.data || result.data.length === 0 || !result.meta?.fields?.length) {
+          toast.error('Could not parse this file. Please check it\'s a valid CSV with headers.')
+          setLoading(false)
+          return
+        }
         loadDataset(file.name, result)
+        toast.success(`Loaded ${file.name} — ${result.data.length.toLocaleString()} rows`)
         setLoading(false)
         setPreviewPage(0)
       },
-      error: () => setLoading(false)
+      error: (err) => {
+        toast.error('Could not parse this file. Please check it\'s a valid CSV with headers.')
+        setLoading(false)
+      }
     })
-  }, [loadDataset])
+  }, [loadDataset, toast])
 
   const handleSampleLoad = useCallback(async (sample) => {
     setLoading(true)
@@ -55,10 +66,10 @@ export default function InspectTab() {
       if (sample.target) setTargetColumn(sample.target)
       setPreviewPage(0)
     } catch (e) {
-      console.error('Failed to load sample:', e)
+      toast.error('Failed to load sample dataset: ' + (e.message || 'Unknown error'))
     }
     setLoading(false)
-  }, [loadDataset, setSensitiveAttrs, setTargetColumn])
+  }, [loadDataset, setSensitiveAttrs, setTargetColumn, toast])
 
   const onDragOver = (e) => { e.preventDefault(); setDragActive(true) }
   const onDragLeave = () => setDragActive(false)
@@ -108,7 +119,7 @@ export default function InspectTab() {
           }}>
             <Eye size={14} style={{ color: 'var(--accent-blue)' }} />
             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent-blue)' }}>
-              Step 1 — Inspect
+              {t('Step 1 — Inspect')}
             </span>
           </div>
           <h2 style={{
@@ -256,7 +267,7 @@ export default function InspectTab() {
             </h2>
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
-            Loaded <strong style={{ color: 'var(--text-secondary)' }}>{datasetName}</strong>
+            {t('Loaded')} <strong style={{ color: 'var(--text-secondary)' }}>{datasetName}</strong>
           </p>
         </div>
         <button
@@ -399,7 +410,7 @@ export default function InspectTab() {
                 }} />
                 <input
                   className="input"
-                  placeholder="Search rows..."
+                  placeholder={t("Search rows...")}
                   value={searchTerm}
                   onChange={e => { setSearchTerm(e.target.value); setPreviewPage(0) }}
                   style={{ paddingLeft: '32px', width: '200px', fontSize: '0.8125rem' }}
@@ -454,7 +465,7 @@ export default function InspectTab() {
         {totalPages > 1 && (
           <div className="card-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Page {previewPage + 1} of {totalPages}
+              {t('Page')} {previewPage + 1} {t('of')} {totalPages}
             </span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button

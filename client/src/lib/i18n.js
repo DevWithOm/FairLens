@@ -1,5 +1,5 @@
 export const DICTIONARY = {
-  hindi: {
+  hi: {
     // Top Nav / Layout
     "Copilot": "सह-पायलट (Copilot)",
     "Toggle sidebar": "साइडबार टॉगल करें",
@@ -198,11 +198,94 @@ export const DICTIONARY = {
     "Analyze compounded disadvantage across two attributes": "दो विशेषताओं में मिश्रित नुकसान का विश्लेषण करें",
     "Row Attribute": "पंक्ति विशेषता (Row)",
     "Column Attribute": "कॉलम विशेषता (Column)",
-    "Explain": "समझाएं"
+    "Explain": "समझाएं",
+
+    // Added translations
+    "Step 1 — Inspect": "चरण 1 — निरीक्षण",
+    "Loaded": "लोड किया गया",
+    "Search rows...": "पंक्तियाँ खोजें...",
+    "Page": "पृष्ठ",
+    "of": "में से",
+    "Fairness Grades": "निष्पक्षता ग्रेड",
+    "A = ≤5% disparity • F = >30% disparity": "A = ≤5% असमानता • F = >30% असमानता",
+    "ML Model Analysis": "ML मॉडल विश्लेषण",
+    "Ensemble Bagged": "एन्सेम्बल बैग्ड",
+    "trees": "ट्रीज",
+    "Decision Tree Classifier": "डिसीजन ट्री क्लासिफायर",
+    "Trained in": "प्रशिक्षित",
+    "Training...": "प्रशिक्षण...",
+    "split": "स्प्लिट",
+    "Training Decision Tree Model...": "डिसीजन ट्री मॉडल का प्रशिक्षण...",
+    "samples": "नमूने",
+    "features": "विशेषताएं",
+    "Model Fairness": "मॉडल निष्पक्षता",
+    "Model DI": "मॉडल DI",
+    "✓ Passes 4/5ths": "✓ 4/5 नियम का पालन करता है",
+    "✕ Fails 4/5ths": "✕ 4/5 नियम का उल्लंघन करता है",
+    "Equalized Odds": "समान अवसर (Equalized Odds)",
+    "TPR/FPR parity": "TPR/FPR समानता",
+    "Stat. Parity": "सांख्यिकीय समानता",
+    "Prediction gap": "भविष्यवाणी अंतराल",
+    "Pred Rate": "भविष्यवाणी दर",
+    "TPR": "TPR",
+    "FPR": "FPR",
+    "Ensemble:": "एन्सेम्बल:",
+    "Single tree": "सिंगल ट्री",
+    "Train:": "प्रशिक्षण:",
+    "Test:": "परीक्षण:",
+    "Features:": "विशेषताएं:",
+    "CM:": "CM:",
+
+    // FixTab missing translations
+    "No Analysis Available": "कोई विश्लेषण उपलब्ध नहीं",
+    "Run bias analysis in the Measure tab first to see fix options.": "सुधार विकल्प देखने के लिए पहले Measure टैब में पूर्वाग्रह विश्लेषण चलाएं।",
+    "Gemini is analyzing your results...": "जेमिनी आपके परिणामों का विश्लेषण कर रहा है...",
+    "Generating plain-language action steps": "सरल भाषा में कार्रवाई योग्य कदम उत्पन्न कर रहा है",
+    "These suggestions are AI-generated guidance. Always validate with domain experts and legal counsel before deployment.": "ये सुझाव एआई-जनित मार्गदर्शन हैं। हमेशा परिनियोजन से पहले डोमेन विशेषज्ञों और कानूनी सलाहकारों से मान्य करें।",
+    "Regenerate": "पुन: उत्पन्न करें",
+    "Group Details — ": "समूह विवरण — ",
+    "DI improvement": "DI सुधार",
+    "Download Debiased Model": "पूर्वाग्रह मुक्त मॉडल डाउनलोड करें",
+    "ML Model Comparison": "ML मॉडल तुलना",
+    "Baseline vs Remediated Decision Tree • Trained in": "बेसलाइन बनाम सुधारित डिसीजन ट्री • प्रशिक्षित",
+    "Removed proxy features:": "हटाए गए प्रॉक्सी फीचर्स:",
+    "Results powered by ML model (Decision Tree Classifier)": "परिणाम ML मॉडल (डिसीजन ट्री क्लासिफायर) द्वारा संचालित",
+
+    // Sidebar translations
+    "Inspect": "निरीक्षण",
+    "Load & explore data": "डेटा लोड और एक्सप्लोर करें",
+    "Measure": "माप",
+    "Bias metrics & charts": "पूर्वाग्रह मेट्रिक्स और चार्ट",
+    "Monitor": "निगरानी",
+    "Real-time drift alerts": "रियल-टाइम ड्रिफ्ट अलर्ट",
+    "Fix": "सुधार",
+    "Remediate bias": "पूर्वाग्रह का निवारण करें",
+    "Report": "रिपोर्ट",
+    "Export audit reports": "ऑडिट रिपोर्ट निर्यात करें",
+    "Workflow": "वर्कफ़्लो",
+    "Return to Landing View": "लैंडिंग व्यू पर वापस लौटें",
+    "Dataset": "डेटासेट",
+    "No dataset loaded": "कोई डेटासेट लोड नहीं किया गया",
+
+    // Topbar translations
+    "Toggle sidebar": "साइडबार टॉगल करें",
+    "Navigation": "नेविगेशन",
+    "Copilot": "कोपायलट",
+
+    // IntersectionalMatrix translations
+    "Intersectional Bias Matrix": "प्रतिच्छेदी पूर्वाग्रह मैट्रिक्स (Intersectional Matrix)",
+    "Loading analysis...": "विश्लेषण लोड हो रहा है...",
+    "Error loading matrix:": "मैट्रिक्स लोड करने में त्रुटि:",
+    "Worst combination": "सबसे खराब संयोजन",
+    "has": "की तुलना में",
+    "lower approval rate than": "कम स्वीकृति दर है",
+    "Why this matters": "यह क्यों मायने रखता है",
+    "Ask Gemini to explain this pattern": "इस पैटर्न को समझाने के लिए जेमिनी से पूछें",
+    "Generating insights...": "अंतर्दृष्टि उत्पन्न कर रहा है..."
   }
 }
 
 export function translate(text, language) {
-  if (language === 'english' || !language) return text;
+  if (language === 'en' || !language) return text;
   return DICTIONARY[language]?.[text] || text;
 }

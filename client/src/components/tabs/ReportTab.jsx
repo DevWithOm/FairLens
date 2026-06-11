@@ -1,25 +1,39 @@
 import React, { useState, useRef } from 'react'
 import { useData } from '../../lib/DataContext'
+import { useToast } from '../common/ToastSystem'
 import {
   FileText, Download, Shield, CheckCircle, AlertTriangle,
   ChevronRight, Loader2, FileDown
 } from 'lucide-react'
 import NutritionLabel from '../report/NutritionLabel'
+import NutritionLabelHero from '../report/NutritionLabelHero'
 import ComplianceChecker from '../report/ComplianceChecker'
+import ShareAudit from '../report/ShareAudit'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 export default function ReportTab() {
-  const { rows, columns, datasetName, sensitiveAttrs, targetColumn, analysisResults, remediationResults, modelResults, t } = useData()
+  const { rows, columns, datasetName, sensitiveAttrs, targetColumn, analysisResults, remediationResults, modelResults, language, t } = useData()
   const [generating, setGenerating] = useState(false)
   const [reportText, setReportText] = useState('')
   const [activeSection, setActiveSection] = useState('nutrition')
+  const [auditId, setAuditId] = useState(null)
+  const [shareUrl, setShareUrl] = useState(null)
   const reportRef = useRef(null)
+  const toast = useToast()
 
   const hasAnalysis = !!analysisResults
   const firstResult = analysisResults ? Object.values(analysisResults).find(Boolean) : null
+
+  // Build metrics object for NutritionLabelHero
+  const heroMetrics = firstResult ? {
+    disparateImpact: firstResult.disparateImpact,
+    statisticalParity: firstResult.statisticalParity,
+    equalizedOdds: modelResults?.fairnessMetrics?.[Object.keys(modelResults.fairnessMetrics || {})[0]]?.equalizedOdds,
+    totalRows: rows.length
+  } : null
 
   // Generate full report from API
   const generateReport = async () => {
@@ -35,7 +49,9 @@ export default function ReportTab() {
           targetColumn,
           analysisResults,
           remediationResults,
-          modelResults
+          modelResults,
+          localReportText: generateLocalReport(),
+          language
         })
       })
       if (!resp.ok) throw new Error('API error')
@@ -46,8 +62,13 @@ export default function ReportTab() {
         // Source was local-fallback or report was null
         setReportText(generateLocalReport())
       }
+      if (data.auditId) {
+        setAuditId(data.auditId)
+        setShareUrl(data.shareUrl)
+      }
     } catch (e) {
       // Fallback: generate locally
+      toast.warning('AI report generation failed. Using local report instead.')
       const report = generateLocalReport()
       setReportText(report)
     }
@@ -181,6 +202,16 @@ ${firstResult?.groups?.map(g => `- **${g.name}**: ${(g.rate * 100).toFixed(1)}% 
 
   return (
     <div className="fade-in-up">
+      {/* ═══ AI Nutrition Label Hero — always visible at top ═══ */}
+      {heroMetrics && (
+        <NutritionLabelHero
+          metrics={heroMetrics}
+          datasetName={datasetName}
+          analysisDate={new Date().toLocaleDateString()}
+          remediationApplied={remediationResults?.strategy || null}
+        />
+      )}
+
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
@@ -206,6 +237,10 @@ ${firstResult?.groups?.map(g => `- **${g.name}**: ${(g.rate * 100).toFixed(1)}% 
           )}
         </div>
       </div>
+
+      {auditId && shareUrl && (
+        <ShareAudit auditId={auditId} shareUrl={shareUrl} />
+      )}
 
       {/* Section Tabs */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
@@ -270,7 +305,22 @@ ${firstResult?.groups?.map(g => `- **${g.name}**: ${(g.rate * 100).toFixed(1)}% 
             <div className="card-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <FileText size={18} style={{ color: 'var(--accent-blue)' }} />
-                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>{t('Full Audit Report')}</h3>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>
+                  {t('Full Audit Report')}
+                  {language === 'hi' && (
+                    <span style={{
+                      display: 'inline-block',
+                      background: '#1a0a2e',
+                      color: '#a78bfa',
+                      border: '1px solid #a78bfa',
+                      fontSize: '10px',
+                      borderRadius: '4px',
+                      padding: '1px 6px',
+                      marginLeft: '8px',
+                      verticalAlign: 'middle'
+                    }}>हिंदी</span>
+                  )}
+                </h3>
               </div>
             </div>
             <div className="card-body">

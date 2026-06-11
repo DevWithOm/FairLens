@@ -8,7 +8,7 @@ const SYSTEM_PROMPT = `You are FairLens Copilot, an AI fairness expert assistant
 // POST /api/copilot/chat
 router.post('/chat', async (req, res) => {
   try {
-    const { message, context } = req.body
+    const { message, context, language } = req.body
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' })
@@ -17,17 +17,21 @@ router.post('/chat', async (req, res) => {
     const apiKey = process.env.GROQ_API_KEY
 
     if (!apiKey || apiKey === 'your_groq_api_key_here') {
-      const response = generateLocalResponse(message, context)
+      const response = generateLocalResponse(message, context, language)
       return res.json({ success: true, response, source: 'local' })
     }
 
     const groq = new Groq({ apiKey })
 
     const contextStr = context ? `\n\nUser's current context:\n${JSON.stringify(context, null, 2)}` : ''
+    let finalSystemPrompt = SYSTEM_PROMPT
+    if (language === 'hi') {
+      finalSystemPrompt = "Respond entirely in Hindi (Devanagari script). Use simple, clear Hindi language. " + finalSystemPrompt
+    }
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT + contextStr },
+        { role: 'system', content: finalSystemPrompt + contextStr },
         { role: 'user', content: message }
       ],
       model: 'llama-3.3-70b-versatile',
@@ -54,7 +58,7 @@ router.post('/chat', async (req, res) => {
       errorType = 'model-overloaded';
     }
 
-    const response = generateLocalResponse(req.body.message, req.body.context)
+    const response = generateLocalResponse(req.body.message, req.body.context, req.body.language)
     res.json({ 
       success: true, 
       response, 
@@ -65,9 +69,9 @@ router.post('/chat', async (req, res) => {
   }
 })
 
-function generateLocalResponse(question, context) {
+function generateLocalResponse(question, context, language) {
   const q = question.toLowerCase()
-  const isHindi = q.includes('hindi') || q.includes('हिंदी')
+  const isHindi = language === 'hi' || q.includes('hindi') || q.includes('हिंदी')
   
   function getRandom(arr) {
     return arr[Math.floor(Math.random() * arr.length)]

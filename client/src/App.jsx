@@ -7,7 +7,9 @@ import MeasureTab from './components/tabs/MeasureTab'
 import ReportTab from './components/tabs/ReportTab'
 import FixTab from './components/tabs/FixTab'
 import LandingTab from './components/tabs/LandingTab'
+import BiasMonitor from './components/monitor/BiasMonitor'
 import CopilotPanel from './components/copilot/CopilotPanel'
+import AuditView from './pages/AuditView'
 import { translate } from './lib/i18n'
 
 // ── Data context is now imported from ./lib/DataContext ──
@@ -18,7 +20,7 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [copilotOpen, setCopilotOpen] = useState(false)
-  const [language, setLanguage] = useState('english')
+  const [language, setLanguage] = useState('en')
 
   // ── Dataset State ──
   const [dataset, setDataset] = useState(null)
@@ -60,6 +62,7 @@ export default function App() {
   const renderTab = () => {
     switch (activeTab) {
       case 'measure': return <MeasureTab />
+      case 'monitor': return <BiasMonitor onTabChange={setActiveTab} />
       case 'fix': return <FixTab />
       case 'report': return <ReportTab />
       default: return <InspectTab />
@@ -68,7 +71,9 @@ export default function App() {
 
   return (
     <DataContext.Provider value={contextValue}>
-      {!isAuthenticated ? (
+      {window.location.pathname.startsWith('/audit/') ? (
+        <AuditView auditId={window.location.pathname.split('/')[2]} />
+      ) : !isAuthenticated ? (
         <div style={{ minHeight: '100vh' }}>
           <LandingTab onAuth={(tab = 'inspect') => {
             setActiveTab(tab)
@@ -92,6 +97,8 @@ export default function App() {
               datasetName={datasetName}
               language={language}
               setLanguage={setLanguage}
+              setActiveTab={setActiveTab}
+              activeTab={activeTab}
             />
             <div className="app-content">
               {renderTab()}

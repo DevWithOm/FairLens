@@ -2,11 +2,13 @@ import React, { useState, useMemo } from 'react'
 import { simulateFlip, isPositive } from '../../lib/biasEngine'
 import { ArrowRight, AlertTriangle, CheckCircle, RotateCcw, User, Zap, Cpu } from 'lucide-react'
 import { useData } from '../../lib/DataContext'
+import { useToast } from '../common/ToastSystem'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 export default function ProfileFlipper({ rows, columns, sensitiveAttrs, targetColumn }) {
   const { t, modelResults } = useData()
+  const toast = useToast()
   const [selectedRow, setSelectedRow] = useState(0)
   const [flipAttr, setFlipAttr] = useState(sensitiveAttrs[0] || '')
   const [flipValue, setFlipValue] = useState('')

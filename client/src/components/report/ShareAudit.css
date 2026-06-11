@@ -1,0 +1,80 @@
+.share-audit-card {
+  background: var(--color-surface, #1e1e1e);
+  border: 1px solid var(--color-lime, #a3e635);
+  box-shadow: 0 0 16px rgba(163, 230, 53, 0.12);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.share-audit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.share-audit-title {
+  font-weight: 600;
+  color: var(--color-lime, #a3e635);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.share-audit-badge {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning, #f59e0b);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.share-audit-url-container {
+  background: var(--color-surface-2, #2a2a2a);
+  border: 1px solid var(--color-border, #444);
+  padding: 8px 14px;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.share-audit-url {
+  font-family: monospace;
+  font-size: 14px;
+  color: var(--color-text, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.share-audit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.share-audit-btn.outline {
+  background: transparent;
+  border: 1px solid var(--color-border, #444);
+  color: var(--color-text, #fff);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.share-audit-btn.outline:hover {
+  background: var(--color-surface-2, #2a2a2a);
+  border-color: var(--color-muted, #aaa);
+}
+
+.share-audit-hint {
+  color: var(--color-muted, #aaa);
+  font-size: 12px;
+  line-height: 1.4;
+}

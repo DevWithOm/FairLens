@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useData } from '../../lib/DataContext'
+import { useToast } from '../common/ToastSystem'
 import {
   X, Send, Sparkles, Bot, User, Copy, RotateCcw, Loader2, AlertTriangle
 } from 'lucide-react'
@@ -19,7 +20,8 @@ const SUGGESTED_PROMPTS = [
 
 export default function CopilotPanel({ onClose }) {
   const data = useData()
-  const isHindi = data?.language === 'hindi'
+  const toast = useToast()
+  const isHindi = data?.language === 'hi'
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -95,6 +97,7 @@ export default function CopilotPanel({ onClose }) {
         throw new Error('No response from server')
       }
     } catch (err) {
+      toast.warning(err.message || 'Copilot is running in offline mode.')
       // Fallback to local response if backend is unreachable or returns error
       const response = generateLocalResponse(userMsg, data)
       setMessages(prev => [...prev, { role: 'assistant', content: response, source: 'local-unreachable' }])
@@ -195,6 +198,19 @@ export default function CopilotPanel({ onClose }) {
               whiteSpace: 'pre-wrap'
             }}>
               {msg.content}
+              {msg.role === 'assistant' && isHindi && (
+                <span style={{
+                  display: 'inline-block',
+                  background: '#1a0a2e',
+                  color: '#a78bfa',
+                  border: '1px solid #a78bfa',
+                  fontSize: '10px',
+                  borderRadius: '4px',
+                  padding: '1px 6px',
+                  marginLeft: '8px',
+                  verticalAlign: 'middle'
+                }}>हिंदी</span>
+              )}
               {msg.source === 'local-fallback' && (
                 <div style={{ marginTop: '8px', fontSize: '0.6875rem', color: 'var(--accent-yellow)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <AlertTriangle size={10} />

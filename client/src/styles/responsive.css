@@ -1,0 +1,394 @@
+/* ═══════════════════════════════════════════════════════════
+   FairLens — Responsive Breakpoints
+   Mobile (< 640px) · Tablet (640px – 1024px)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Mobile Drawer Slide-in ── */
+@keyframes drawerSlideIn {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes drawerSlideOut {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+.mobile-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 299;
+  animation: fadeInUp 0.2s ease-out;
+}
+
+.mobile-drawer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 240px;
+  background: var(--bg-secondary, #0d1013);
+  border-right: 1px solid var(--border-subtle);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  animation: drawerSlideIn 0.25s ease-out forwards;
+  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-drawer.closing {
+  animation: drawerSlideOut 0.2s ease-in forwards;
+}
+
+/* ── Demo Highlight Utility ── */
+.demo-highlight {
+  animation: demoGlow 1.5s ease-in-out 3;
+}
+
+@keyframes demoGlow {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 0 3px var(--color-lime, #a3e635), 0 0 20px rgba(163, 230, 53, 0.4); }
+}
+
+/* ── Default: hide mobile hamburger on desktop ── */
+.mobile-hamburger {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════
+   Mobile Base (< 640px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 640px) {
+
+  /* ── Sidebar → Bottom Tab Bar ── */
+  .app-sidebar {
+    position: fixed;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    height: 64px !important;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid var(--border-subtle);
+    border-right: none;
+    z-index: 200;
+    transform: none !important;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* Hide sidebar header (logo area) and dataset status on mobile bottom bar */
+  .app-sidebar > div:first-child,
+  .app-sidebar > div:last-child {
+    display: none;
+  }
+
+  /* Make nav horizontal */
+  .app-sidebar nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    padding: 0 4px;
+    flex: unset;
+  }
+
+  /* Hide the "WORKFLOW" label */
+  .app-sidebar nav > p {
+    display: none;
+  }
+
+  /* Sidebar nav buttons become compact vertical icons */
+  .app-sidebar nav button {
+    flex-direction: column;
+    gap: 2px !important;
+    font-size: 10px;
+    padding: 8px 6px !important;
+    min-width: 0;
+    width: auto;
+    text-align: center;
+    margin-bottom: 0 !important;
+    border-radius: 8px !important;
+  }
+
+  /* Hide step number on mobile */
+  .app-sidebar nav button > div:first-child {
+    display: none;
+  }
+
+  /* Hide description text and chevron */
+  .app-sidebar nav button > div:last-child > div:last-child,
+  .app-sidebar nav button > svg:last-child {
+    display: none;
+  }
+
+  /* Shrink nav label text */
+  .app-sidebar nav button > div:last-child > div:first-child {
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  /* Hide active indicator bar (left strip) on mobile */
+  .app-sidebar nav button > div[style*="position: absolute"] {
+    display: none;
+  }
+
+  /* ── Main Content adjustments ── */
+  .app-main {
+    margin-left: 0 !important;
+    padding-bottom: 80px;
+  }
+
+  .app-content {
+    padding: 16px !important;
+    padding-bottom: 80px !important;
+  }
+
+  /* ── Topbar: compact on mobile ── */
+  .app-topbar {
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  /* Hide dataset name in topbar on mobile */
+  .app-topbar .bias-heartbeat {
+    display: none;
+  }
+  .app-topbar span[style*="font-family: var(--font-mono)"] {
+    display: none;
+  }
+
+  /* ── Grid → single column ── */
+  div[style*="grid-template-columns: repeat(auto-fit"],
+  div[style*="gridTemplateColumns: repeat(auto-fit"],
+  div[style*="grid-template-columns: repeat(4"],
+  div[style*="gridTemplateColumns: repeat(4"],
+  div[style*="grid-template-columns: 2fr 1fr"],
+  div[style*="gridTemplateColumns: 2fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Metric cards full-width ── */
+  .metric-card {
+    width: 100% !important;
+    padding: 16px;
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+  }
+
+  /* ── Card system adjustments ── */
+  .card-header {
+    padding: 14px 16px 12px;
+  }
+  .card-body {
+    padding: 16px;
+  }
+  .card-footer {
+    padding: 12px 16px;
+  }
+
+  /* ── Tables: horizontal scroll ── */
+  div[style*="overflow-x: auto"],
+  div[style*="overflowX: auto"] {
+    -webkit-overflow-scrolling: touch;
+  }
+  .data-table {
+    min-width: 480px;
+  }
+
+  /* ── BeforeAfterHero: stack vertically ── */
+  div[style*="display: flex"][style*="justify-content: space-between"][style*="margin-bottom: 32px"] {
+    flex-direction: column !important;
+    gap: 24px !important;
+  }
+
+  /* ── Upload zone: compact ── */
+  .upload-zone {
+    padding: 32px 20px;
+  }
+
+  /* ── DemoNarration panel: full-width on mobile, above tab bar ── */
+  .demo-narration-panel {
+    width: calc(100vw - 32px) !important;
+    left: 16px !important;
+    transform: none !important;
+    bottom: 80px !important;
+    max-width: none !important;
+  }
+
+  /* ── AI Copilot panel: full screen on mobile ── */
+  div[style*="width: '400px'"][style*="position: 'fixed'"],
+  div[style*="width: 400px"][style*="position: fixed"] {
+    width: 100% !important;
+    border-radius: 0 !important;
+  }
+
+  /* ── Buttons: smaller on mobile ── */
+  .btn {
+    padding: 8px 14px;
+    font-size: 0.8125rem;
+  }
+  .btn-lg {
+    padding: 10px 20px;
+    font-size: 0.875rem;
+  }
+
+  /* ── DemoMode trigger: compact ── */
+  .demo-trigger-btn {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+
+  /* ── Sample datasets: single column ── */
+  div[style*="grid-template-columns: repeat(auto-fit, minmax(240px"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Recharts: allow scroll ── */
+  .recharts-responsive-container {
+    min-width: 320px;
+  }
+
+  /* ── Hide desktop sidebar toggle, show mobile hamburger ── */
+  #toggle-sidebar {
+    display: none;
+  }
+
+  .mobile-hamburger {
+    display: inline-flex !important;
+  }
+
+  /* ── Hide text labels in topbar buttons on mobile ── */
+  .topbar-lang-label {
+    display: none;
+  }
+  .topbar-copilot-label {
+    display: none;
+  }
+  .topbar-copilot-btn {
+    padding: 8px !important;
+  }
+  .topbar-lang-btn {
+    padding: 6px 8px !important;
+  }
+
+  /* ── Hide dataset info in topbar ── */
+  .topbar-dataset-info {
+    display: none !important;
+  }
+
+  /* ── Hide bell on small screens to save space ── */
+  .topbar-bell-btn {
+    display: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════
+   Tablet (640px – 1024px)
+   ═══════════════════════════════════════════ */
+@media (min-width: 641px) and (max-width: 1024px) {
+
+  /* ── Sidebar: always visible, icon-only mode ── */
+  .app-sidebar {
+    width: 64px !important;
+    transform: translateX(0) !important; /* always show on tablet */
+  }
+
+  /* Hide logo text, keep icon only */
+  .app-sidebar > div:first-child {
+    padding: 14px 8px !important;
+  }
+
+  /* Hide nav labels and descriptions */
+  .app-sidebar nav button > div:last-child {
+    display: none;
+  }
+
+  /* Hide step numbers */
+  .app-sidebar nav button > div:first-child {
+    display: none;
+  }
+
+  /* Center the icon */
+  .app-sidebar nav button {
+    justify-content: center;
+    padding: 14px 0 !important;
+  }
+
+  /* Hide chevron */
+  .app-sidebar nav button > svg:last-child {
+    display: none;
+  }
+
+  /* Hide "WORKFLOW" text */
+  .app-sidebar nav > p {
+    display: none;
+  }
+
+  /* Hide dataset panel at bottom */
+  .app-sidebar > div:last-child {
+    display: none;
+  }
+
+  /* ── Main content adjusts to icon sidebar ── */
+  .app-main {
+    margin-left: 64px !important;
+  }
+
+  .app-main.sidebar-closed {
+    margin-left: 0 !important;
+  }
+
+  .app-content {
+    padding: 20px;
+  }
+
+  /* ── Grids: 3-col → 2-col ── */
+  div[style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* ── Topbar: compact padding ── */
+  .app-topbar {
+    padding: 0 16px;
+  }
+
+  /* ── Demo button: slightly smaller ── */
+  .demo-trigger-btn {
+    padding: 8px 16px;
+    font-size: 0.8125rem;
+  }
+
+  /* ── Copilot panel: slightly narrower ── */
+  div[style*="width: '400px'"],
+  div[style*="width: 400px"] {
+    width: 320px !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════
+   Small Height Adjustments (landscape mobile)
+   ═══════════════════════════════════════════ */
+@media (max-height: 500px) and (max-width: 900px) {
+  .app-sidebar {
+    height: 52px;
+  }
+
+  .app-content {
+    padding-bottom: 60px !important;
+  }
+
+  .demo-narration-panel {
+    bottom: 60px !important;
+    padding: 12px 16px !important;
+  }
+}

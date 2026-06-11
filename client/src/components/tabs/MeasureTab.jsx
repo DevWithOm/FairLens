@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { useData } from '../../lib/DataContext'
+import { useToast } from '../common/ToastSystem'
 import {
   BarChart3, AlertTriangle, CheckCircle, Play,
   TrendingUp, Percent, Users, Scale, Shield,
@@ -246,7 +247,8 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function MeasureTab() {
-  const { rows, columns, sensitiveAttrs, targetColumn, analysisResults, setAnalysisResults, modelResults, setModelResults, t } = useData()
+  const { rows, columns, sensitiveAttrs, targetColumn, analysisResults, setAnalysisResults, modelResults, setModelResults, language, t } = useData()
+  const toast = useToast()
   const [analyzing, setAnalyzing] = useState(false)
   const [trainingModel, setTrainingModel] = useState(false)
   const [activeMetric, setActiveMetric] = useState('disparateImpact')
@@ -269,11 +271,11 @@ export default function MeasureTab() {
         }
       }
     } catch (err) {
-      console.error('ML model training failed:', err)
+      toast.error('Model training failed — dataset may be too small (minimum 50 rows per group).')
     } finally {
       setTrainingModel(false)
     }
-  }, [rows, columns, sensitiveAttrs, targetColumn, setModelResults])
+  }, [rows, columns, sensitiveAttrs, targetColumn, setModelResults, toast])
 
   const runAnalysis = () => {
     setAnalyzing(true)
@@ -285,11 +287,12 @@ export default function MeasureTab() {
           if (res) results[attr] = res
         })
         setAnalysisResults(results)
+        toast.success(`Bias analysis complete — ${Object.keys(results).length} attribute(s) analyzed`)
         // Also train ML model
         setAnalyzing(false)
         await trainMLModel()
       } catch (err) {
-        console.error("Bias analysis failed:", err)
+        toast.error('Bias analysis failed: ' + (err.message || 'Unknown error'))
         setAnalyzing(false)
       }
     }, 800)
@@ -469,9 +472,9 @@ export default function MeasureTab() {
               <div className="card-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <Shield size={18} style={{ color: 'var(--accent-teal)' }} />
-                  <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Fairness Grades</h3>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>{t('Fairness Grades')}</h3>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    A = ≤5% disparity • F = &gt;30% disparity
+                    {t('A = ≤5% disparity • F = >30% disparity')}
                   </span>
                 </div>
               </div>
@@ -495,15 +498,15 @@ export default function MeasureTab() {
                       <Cpu size={16} style={{ color: 'white' }} />
                     </div>
                     <div>
-                      <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>ML Model Analysis</h3>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>{t('ML Model Analysis')}</h3>
                       <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1px' }}>
-                        {modelResults?.ensemble ? `Ensemble Bagged (${modelResults.numTrees} trees)` : 'Decision Tree Classifier'} • {modelResults ? `Trained in ${modelResults.trainingTime}ms` : 'Training...'}
+                        {modelResults?.ensemble ? t('Ensemble Bagged') + ` (${modelResults.numTrees} ` + t('trees') + `)` : t('Decision Tree Classifier')} • {modelResults ? t('Trained in') + ` ${modelResults.trainingTime}ms` : t('Training...')}
                       </p>
                     </div>
                   </div>
                   {modelResults && (
                     <span className={`badge ${modelResults.metrics.accuracy >= 0.7 ? 'badge-green' : modelResults.metrics.accuracy >= 0.5 ? 'badge-yellow' : 'badge-red'}`}>
-                      {modelResults.modelType} • {modelResults.splitRatio} split
+                      {modelResults.modelType} • {modelResults.splitRatio} {t('split')}
                     </span>
                   )}
                 </div>
@@ -519,9 +522,9 @@ export default function MeasureTab() {
                     }}>
                       <Loader2 size={24} className="spin" style={{ color: 'var(--accent-blue)' }} />
                     </div>
-                    <p style={{ fontWeight: 600, marginBottom: '4px' }}>Training Decision Tree Model...</p>
+                    <p style={{ fontWeight: 600, marginBottom: '4px' }}>{t('Training Decision Tree Model...')}</p>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
-                      {rows.length.toLocaleString()} samples • {columns.length} features
+                      {rows.length.toLocaleString()} {t('samples')} • {columns.length} {t('features')}
                     </p>
                   </div>
                 ) : modelResults ? (
@@ -529,10 +532,10 @@ export default function MeasureTab() {
                     {/* Performance Metrics Row */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
                       {[
-                        { label: 'Accuracy', value: modelResults.metrics.accuracy, color: '#63B3ED' },
-                        { label: 'Precision', value: modelResults.metrics.precision, color: '#48BB78' },
-                        { label: 'Recall', value: modelResults.metrics.recall, color: '#B794F4' },
-                        { label: 'F1 Score', value: modelResults.metrics.f1, color: '#38B2AC' }
+                        { label: t('Accuracy'), value: modelResults.metrics.accuracy, color: '#63B3ED' },
+                        { label: t('Precision'), value: modelResults.metrics.precision, color: '#48BB78' },
+                        { label: t('Recall'), value: modelResults.metrics.recall, color: '#B794F4' },
+                        { label: t('F1 Score'), value: modelResults.metrics.f1, color: '#38B2AC' }
                       ].map(m => (
                         <div key={m.label} style={{
                           textAlign: 'center', padding: '16px',
@@ -577,13 +580,13 @@ export default function MeasureTab() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                           <span className="badge badge-purple">{attr}</span>
                           <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                            Model Fairness
+                            {t('Model Fairness')}
                           </span>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                           <div style={{ textAlign: 'center' }}>
                             <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                              Model DI
+                              {t('Model DI')}
                             </p>
                             <span style={{
                               fontSize: '1.375rem', fontWeight: 900, fontFamily: 'var(--font-mono)',
@@ -592,12 +595,12 @@ export default function MeasureTab() {
                               {(fm.modelDI * 100).toFixed(1)}%
                             </span>
                             <p style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                              {fm.modelDI >= 0.8 ? '✓ Passes 4/5ths' : '✕ Fails 4/5ths'}
+                              {fm.modelDI >= 0.8 ? t('✓ Passes 4/5ths') : t('✕ Fails 4/5ths')}
                             </p>
                           </div>
                           <div style={{ textAlign: 'center' }}>
                             <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                              Equalized Odds
+                              {t('Equalized Odds')}
                             </p>
                             <span style={{
                               fontSize: '1.375rem', fontWeight: 900, fontFamily: 'var(--font-mono)',
@@ -606,12 +609,12 @@ export default function MeasureTab() {
                               {(fm.equalizedOdds * 100).toFixed(1)}%
                             </span>
                             <p style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                              TPR/FPR parity
+                              {t('TPR/FPR parity')}
                             </p>
                           </div>
                           <div style={{ textAlign: 'center' }}>
                             <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                              Stat. Parity
+                              {t('Stat. Parity')}
                             </p>
                             <span style={{
                               fontSize: '1.375rem', fontWeight: 900, fontFamily: 'var(--font-mono)',
@@ -620,7 +623,7 @@ export default function MeasureTab() {
                               {(fm.statisticalParity * 100).toFixed(1)}%
                             </span>
                             <p style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                              Prediction gap
+                              {t('Prediction gap')}
                             </p>
                           </div>
                         </div>
@@ -630,12 +633,12 @@ export default function MeasureTab() {
                           <table className="data-table" style={{ margin: 0, border: 'none', fontSize: '0.75rem' }}>
                             <thead>
                               <tr>
-                                <th>Group</th>
-                                <th>Pred Rate</th>
-                                <th>TPR</th>
-                                <th>FPR</th>
-                                <th>Precision</th>
-                                <th>Accuracy</th>
+                                <th>{t('Group')}</th>
+                                <th>{t('Pred Rate')}</th>
+                                <th>{t('TPR')}</th>
+                                <th>{t('FPR')}</th>
+                                <th>{t('Precision')}</th>
+                                <th>{t('Accuracy')}</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -670,11 +673,11 @@ export default function MeasureTab() {
                       fontSize: '0.6875rem', color: 'var(--text-muted)'
                     }}>
                       <Cpu size={12} />
-                      {modelResults.ensemble ? `Ensemble: ${modelResults.numTrees} trees` : 'Single tree'} •
-                      Train: {modelResults.metrics.trainSize} samples •
-                      Test: {modelResults.metrics.testSize} samples •
-                      Features: {modelResults.features?.length || '—'} •
-                      CM: TP={modelResults.metrics.tp} FP={modelResults.metrics.fp} FN={modelResults.metrics.fn} TN={modelResults.metrics.tn}
+                      {modelResults.ensemble ? t('Ensemble:') + ` ${modelResults.numTrees} ` + t('trees') : t('Single tree')} •
+                      {t('Train:')} {modelResults.metrics.trainSize} {t('samples')} •
+                      {t('Test:')} {modelResults.metrics.testSize} {t('samples')} •
+                      {t('Features:')} {modelResults.features?.length || '—'} •
+                      {t('CM:')} TP={modelResults.metrics.tp} FP={modelResults.metrics.fp} FN={modelResults.metrics.fn} TN={modelResults.metrics.tn}
                     </div>
                   </>
                 ) : null}
@@ -826,6 +829,7 @@ export default function MeasureTab() {
             columns={columns}
             sensitiveAttrs={sensitiveAttrs}
             targetColumn={targetColumn}
+            language={language}
           />
         </>
       )}
