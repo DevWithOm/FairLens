@@ -1,36 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, Legend
 } from 'recharts';
+import { useData } from '../../lib/DataContext';
 
 export default function DriftChart() {
-  const [data, setData] = useState([]);
+  const { auditHistory } = useData();
 
-  useEffect(() => {
-    // Generate 12 data points simulating the last 12 audit sessions
-    // Pattern: start at ~0.75, drift down to ~0.55 by session 8, jump to ~0.88 after session 9
-    const generatedData = Array.from({ length: 12 }).map((_, i) => {
-      const sessionNum = i + 1;
-      let disparateImpact, statisticalParity;
-      
-      if (sessionNum <= 8) {
-        disparateImpact = 0.75 - (sessionNum * 0.025);
-        statisticalParity = -0.10 - (sessionNum * 0.015);
-      } else {
-        disparateImpact = 0.88 + ((sessionNum - 9) * 0.005);
-        statisticalParity = -0.05 + ((sessionNum - 9) * 0.005);
-      }
-
-      return {
-        session: `Audit ${sessionNum}`,
-        disparateImpact: Number(disparateImpact.toFixed(2)),
-        statisticalParity: Number(statisticalParity.toFixed(2)),
-        timestamp: `Jan ${10 + i}`
-      };
-    });
-
-    setData(generatedData);
-  }, []);
+  const data = useMemo(() => {
+    if (!auditHistory) return [];
+    // The history is newest-first (index 0 is newest), we need oldest-first for the chart
+    return [...auditHistory].reverse().map(record => ({
+      session: record.session,
+      disparateImpact: record.di,
+      statisticalParity: record.spd,
+      timestamp: record.timeLabel
+    }));
+  }, [auditHistory]);
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {

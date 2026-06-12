@@ -1,24 +1,17 @@
 import React from 'react';
 import DriftChart from './DriftChart';
+import { useData } from '../../lib/DataContext';
 
 export default function BiasMonitor({ onTabChange }) {
-  const currentDI = 0.87;
+  const { auditHistory, driftAlerts } = useData();
+  
+  const history = auditHistory || [];
+  const alerts = driftAlerts || [];
+  
+  const currentDI = history.length > 0 ? history[0].di : 0;
   const isDICompliant = currentDI >= 0.80;
-
-  const alerts = [
-    { type: 'Critical', text: 'Gender DI dropped below 0.70 threshold', meta: 'Session 8 · 3 days ago', color: 'var(--color-red, #ef4444)' },
-    { type: 'Warning', text: 'Statistical Parity worsening (-0.22)', meta: 'Session 7 · 5 days ago', color: 'var(--color-amber, #fbbf24)' },
-    { type: 'Resolved', text: 'Re-weighting fix applied — DI restored to 0.87', meta: 'Session 9 · 2 hours ago', color: 'var(--color-lime, #a3e635)' },
-    { type: 'Info', text: 'New dataset version loaded: hiring_bias_v2.csv', meta: 'Session 10 · 1 hour ago', color: 'var(--color-blue, #60a5fa)' },
-  ];
-
-  const history = [
-    { session: 'Session 12', dataset: 'hiring_bias_v2.csv', di: 0.87, spd: -0.05, status: 'Compliant' },
-    { session: 'Session 11', dataset: 'hiring_bias_v2.csv', di: 0.86, spd: -0.06, status: 'Compliant' },
-    { session: 'Session 10', dataset: 'hiring_bias_v2.csv', di: 0.85, spd: -0.08, status: 'Compliant' },
-    { session: 'Session 9', dataset: 'hiring_bias_v1.csv', di: 0.65, spd: -0.28, status: 'Critical' },
-    { session: 'Session 8', dataset: 'hiring_bias_v1.csv', di: 0.68, spd: -0.25, status: 'Critical' },
-  ];
+  const totalAudits = history.length;
+  const lastAudit = history.length > 0 ? history[0].timestamp : 'Never';
 
   const getStatusColor = (status) => {
     if (status === 'Compliant') return 'var(--color-lime, #a3e635)';
@@ -40,13 +33,13 @@ export default function BiasMonitor({ onTabChange }) {
         
         <div style={{ background: 'var(--color-surface, #14181c)', border: '1px solid var(--color-border, rgba(255,255,255,0.1))', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '0.875rem', color: 'var(--color-muted, #878c91)', marginBottom: '8px' }}>Sessions Audited</div>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#ffffff' }}>12</div>
+          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#ffffff' }}>{totalAudits}</div>
           <div style={{ fontSize: '0.75rem', color: 'var(--color-muted, #878c91)', marginTop: '4px' }}>Total audits run</div>
         </div>
 
         <div style={{ background: 'var(--color-surface, #14181c)', border: '1px solid var(--color-border, rgba(255,255,255,0.1))', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '0.875rem', color: 'var(--color-muted, #878c91)', marginBottom: '8px' }}>Last Audit</div>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-muted, #878c91)' }}>2 hours ago</div>
+          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-muted, #878c91)' }}>{lastAudit}</div>
           <div style={{ fontSize: '0.75rem', color: 'var(--color-muted, #878c91)', marginTop: '4px' }}>System automated run</div>
         </div>
       </div>

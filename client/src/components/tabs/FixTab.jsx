@@ -309,7 +309,7 @@ function PlainEnglishSuggestions({ simResult, analysisResults, language }) {
 // Main FixTab Component
 // ═══════════════════════════════════════════════════
 export default function FixTab() {
-  const { rows, columns, sensitiveAttrs, targetColumn, analysisResults, remediationResults, setRemediationResults, modelResults, language, t } = useData()
+  const { rows, columns, sensitiveAttrs, targetColumn, analysisResults, remediationResults, setRemediationResults, modelResults, datasetName, addAuditRecord, language, t } = useData()
   const toast = useToast()
   const [selectedStrategy, setSelectedStrategy] = useState(null)
   const [simResult, setSimResult] = useState(null)
@@ -442,6 +442,8 @@ export default function FixTab() {
 
           setSimResult(result)
           setRemediationResults(result)
+          if (addAuditRecord) addAuditRecord(result.newDI, -result.newSP, datasetName, 'Fix')
+
           setApplying(false)
           return
         }
@@ -477,6 +479,8 @@ export default function FixTab() {
 
       setSimResult(result)
       setRemediationResults(result)
+      if (addAuditRecord) addAuditRecord(result.newDI, -result.newSP, datasetName, 'Fix')
+
       setApplying(false)
     }, 600)
   }

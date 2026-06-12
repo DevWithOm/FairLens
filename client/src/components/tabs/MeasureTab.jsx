@@ -247,7 +247,7 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function MeasureTab() {
-  const { rows, columns, sensitiveAttrs, targetColumn, analysisResults, setAnalysisResults, modelResults, setModelResults, language, t } = useData()
+  const { rows, columns, sensitiveAttrs, targetColumn, analysisResults, setAnalysisResults, modelResults, setModelResults, datasetName, addAuditRecord, language, t } = useData()
   const toast = useToast()
   const [analyzing, setAnalyzing] = useState(false)
   const [trainingModel, setTrainingModel] = useState(false)
@@ -299,6 +299,12 @@ export default function MeasureTab() {
           if (res) results[attr] = res
         })
         setAnalysisResults(results)
+        
+        const firstAttr = Object.keys(results)[0]
+        if (firstAttr && addAuditRecord) {
+          addAuditRecord(results[firstAttr].disparateImpact, -results[firstAttr].statisticalParity, datasetName, 'Measure')
+        }
+        
         toast.success(`Bias analysis complete — ${Object.keys(results).length} attribute(s) analyzed`)
         // Also train ML model
         setAnalyzing(false)
