@@ -594,6 +594,30 @@ A complete text report is generated containing the executive summary, key findin
 
 FairLens supports full bilingual operation in English and Hindi. The language can be toggled from the Settings tab. All UI labels, button text, metric names, compliance results, and explanatory tooltips are translated. The translation system uses a `t()` function that looks up the Hindi equivalent of any English string from a translation dictionary.
 
+### 5.6 Graph & Visualization Architecture
+
+The project relies heavily on data visualization to make complex statistical bias metrics understandable. All graphs and charts in FairLens are built using **Recharts**, a composable charting library built on React components. Here is how the key visualizations are constructed:
+
+**1. Group Outcome Bar Charts (Measure Tab):**
+- **Purpose:** To visually compare the positive outcome rates (e.g., % hired) across different demographic groups.
+- **Implementation:** Uses Recharts `<BarChart>` and `<Bar>` components. The `dataKey` is set to the calculated `rate` for each group. We apply a custom color palette (`CHART_COLORS`) so that each group has a distinct, consistent color. A `<Tooltip>` component provides exact percentages on hover.
+
+**2. Demographic Distribution Pie Charts (Measure Tab):**
+- **Purpose:** To show the sample size representation of each group in the dataset.
+- **Implementation:** Uses Recharts `<PieChart>` and `<Pie>` components. The `dataKey` is the `total` count of rows for that group. We configure an `innerRadius` to create a modern "donut" chart style, and set a `paddingAngle` to create visual separation between the slices.
+
+**3. Fairness-Accuracy Trade-off Line Chart (Fix Tab):**
+- **Purpose:** To visualize how increasing the "fairness weight" during remediation impacts model accuracy, precision, and recall.
+- **Implementation:** Uses Recharts `<LineChart>`. This chart plots four `<Line>` components simultaneously: Fairness (Green), Accuracy (Blue), Precision (Purple, dashed), and Recall (Teal, dashed). The X-axis represents the Fairness Weight (0% to 100%), and the Y-axis is bound between 50 and 100 to clearly show the drop-off in accuracy as fairness increases.
+
+**4. Before/After Remediation Bar Charts (Fix Tab):**
+- **Purpose:** To directly compare a group's outcome rate before remediation against its rate after remediation.
+- **Implementation:** Uses a grouped `<BarChart>` where each demographic group on the X-axis has two bars side-by-side: "Before" (colored translucent red) and "After" (colored translucent green). The data object maps `original` and `adjusted` rates for easy visual comparison.
+
+**5. Animated Circular Gauges (Custom SVGs):**
+- **Purpose:** To display the high-level DIR, SPD, and Fairness scores in the Nutrition Label and Hero sections.
+- **Implementation:** Instead of a charting library, these are custom React components rendering SVG `<circle>` elements. The `strokeDasharray` and `strokeDashoffset` properties are calculated mathematically based on the percentage score to create a smooth, animated radial progress bar that fills up on load.
+
 ---
 
 <div style="page-break-after: always;"></div>
