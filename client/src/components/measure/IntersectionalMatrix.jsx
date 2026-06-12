@@ -28,21 +28,88 @@ export default function IntersectionalMatrix({ rows, sensitiveAttrs, targetColum
       try {
         setIsLoading(true);
         setError(null);
-        // Minimize payload by sending only the relevant columns to avoid payload size limits (e.g. 413 Payload Too Large)
-        const minimizedData = rows.map(r => ({
-          [attribute1]: r[attribute1],
-          [attribute2]: r[attribute2],
-          [targetColumn]: r[targetColumn]
-        }));
+        
+        // Compute matrix data client-side for zero latency
+        const validData = Array.isArray(rows) ? rows.filter(Boolean) : [];
+        const matrix = {};
+        const attr1Set = new Set();
+        const attr2Set = new Set();
 
-        const res = await fetch(`${API_URL}/analysis/intersectional`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: minimizedData, attribute1, attribute2, targetColumn, positiveOutcome })
+        validData.forEach(row => {
+          const v1 = String(row[attribute1] ?? 'Unknown');
+          const v2 = String(row[attribute2] ?? 'Unknown');
+          attr1Set.add(v1);
+          attr2Set.add(v2);
+
+          const key = `${v1}_${v2}`;
+          if (!matrix[key]) {
+            matrix[key] = { label: `${v1} + ${v2}`, positiveCount: 0, count: 0 };
+          }
+
+          matrix[key].count++;
+
+          const outcome = row[targetColumn];
+          const isPos = outcome === 1 || outcome === '1' || outcome === 'Yes' || outcome === 'yes' ||
+                        outcome === true || outcome === 'Approved' || outcome === 'approved' ||
+                        outcome === 'Selected' || outcome === 'selected' || outcome === 'Hired' || outcome === 'hired';
+          if (isPos || (outcome !== undefined && outcome !== null && String(outcome).toLowerCase() === String(positiveOutcome).toLowerCase())) {
+            matrix[key].positiveCount++;
+          }
         });
-        if (!res.ok) throw new Error('Failed to fetch intersectional data');
-        const result = await res.json();
-        setMatrixData(result);
+
+        const attr1Values = [...attr1Set];
+        const attr2Values = [...attr2Set];
+
+        let bestGroup = null;
+        for (const v1 of attr1Values) {
+          for (const v2 of attr2Values) {
+            const key = `${v1}_${v2}`;
+            if (!matrix[key]) {
+              matrix[key] = { label: `${v1} + ${v2}`, rate: 0, count: 0, ratio: 0 };
+            } else {
+              const cell = matrix[key];
+              cell.rate = cell.count > 0 ? cell.positiveCount / cell.count : 0;
+              cell.ratio = 0;
+              delete cell.positiveCount;
+            }
+
+            const cell = matrix[key];
+            if (!bestGroup || cell.rate > bestGroup.rate) {
+              bestGroup = { label: cell.label, rate: cell.rate, count: cell.count, key };
+            }
+          }
+        }
+
+        const bestRate = bestGroup?.rate || 1;
+        let worstGroup = null;
+        let maxDisparity = 0;
+
+        for (const key in matrix) {
+          const cell = matrix[key];
+          const ratio = bestRate > 0 ? cell.rate / bestRate : 1;
+          const disparity = 1 - ratio;
+          
+          cell.ratio = ratio;
+          
+          if (!worstGroup || disparity > (1 - worstGroup.ratio)) {
+            worstGroup = { ...cell, ratio };
+          }
+          
+          if (disparity > maxDisparity) {
+            maxDisparity = disparity;
+          }
+        }
+
+        setMatrixData({
+          attribute1,
+          attribute2,
+          attr1Values,
+          attr2Values,
+          matrix,
+          worstGroup,
+          bestGroup,
+          maxDisparity
+        });
       } catch (err) {
         setError(err.message);
       } finally {
@@ -131,7 +198,7 @@ export default function IntersectionalMatrix({ rows, sensitiveAttrs, targetColum
         {sensitiveAttrs?.[0] || 'Attribute 1'} × {sensitiveAttrs?.[1] || 'Attribute 2'} — compounded disadvantage
       </p>
 
-      {matrixData.maxDisparity > 0.25 && (
+      {matrixData.maxDisparity > 0.25 && matrixData.worstGroup && matrixData.bestGroup && (
         <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', borderRadius: '8px', padding: '16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ fontSize: '1.5rem' }}>⚠</span>
           <div>

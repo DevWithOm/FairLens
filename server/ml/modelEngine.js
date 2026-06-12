@@ -198,7 +198,11 @@ export function trainModel(rows, featureCols, targetColumn, sensitiveAttrs, opti
 
   // 4. Train/test split — adaptive ratio based on dataset size
   const splitRatio = rows.length > 5000 ? 0.85 : rows.length > 2000 ? 0.80 : 0.75
-  const indices = shuffle(Array.from({ length: cleanRows.length }, (_, i) => i))
+  
+  // Downsample for performance (max 3000 rows)
+  const maxRows = Math.min(cleanRows.length, 3000)
+  const indices = shuffle(Array.from({ length: cleanRows.length }, (_, i) => i)).slice(0, maxRows)
+  
   const splitIdx = Math.floor(indices.length * splitRatio)
   const trainIndices = indices.slice(0, splitIdx)
   const testIndices = indices.slice(splitIdx)

@@ -375,8 +375,16 @@ export default function FixTab() {
     setMlComparison(null)
 
     // Minimize payload size by selecting only targetColumn, sensitiveAttrs, and feature columns
+    // Also downsample to max 3000 rows here to prevent massive network payloads (server only trains on max 3000 anyway)
     const neededColumns = new Set([targetColumn, ...sensitiveAttrs, ...columns])
-    const minimizedRows = rows.map(r => {
+    
+    const maxRows = 3000;
+    let sampleRows = rows;
+    if (rows.length > maxRows) {
+      sampleRows = [...rows].sort(() => 0.5 - Math.random()).slice(0, maxRows);
+    }
+
+    const minimizedRows = sampleRows.map(r => {
       const minimizedRow = {}
       neededColumns.forEach(col => {
         if (r[col] !== undefined) {
