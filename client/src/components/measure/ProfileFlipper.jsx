@@ -42,7 +42,7 @@ export default function ProfileFlipper({ rows, columns, sensitiveAttrs, targetCo
 
         if (resp.ok) {
           const data = await resp.json()
-          if (data.success) {
+          if (data.success && data.original && data.flipped) {
             setResult({
               originalOutcome: data.original.label,
               flippedOutcome: data.flipped.label,
@@ -55,6 +55,8 @@ export default function ProfileFlipper({ rows, columns, sensitiveAttrs, targetCo
             setMlPowered(true)
             setAnimating(false)
             return
+          } else {
+            console.warn('ML prediction returned invalid data, falling back.');
           }
         }
       } catch (err) {
@@ -64,9 +66,15 @@ export default function ProfileFlipper({ rows, columns, sensitiveAttrs, targetCo
 
     // Fallback: statistical simulation
     setTimeout(() => {
-      const res = simulateFlip(rows, selectedRow, flipAttr, flipValue, targetColumn)
-      setResult(res)
-      setAnimating(false)
+      try {
+        const res = simulateFlip(rows, selectedRow, flipAttr, flipValue, targetColumn)
+        setResult(res)
+      } catch (e) {
+        console.error('Fallback simulation failed:', e)
+        setResult(null)
+      } finally {
+        setAnimating(false)
+      }
     }, 600)
   }
 

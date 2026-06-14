@@ -1,5 +1,5 @@
 import express from 'express'
-import Groq from 'groq-sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
 const router = express.Router()
 
@@ -14,45 +14,43 @@ router.post('/chat', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' })
     }
 
-    const apiKey = process.env.GROQ_API_KEY
+    const apiKey = process.env.GEMINI_API_KEY
 
-    if (!apiKey || apiKey === 'your_groq_api_key_here') {
+    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
       const response = generateLocalResponse(message, context, language)
       return res.json({ success: true, response, source: 'local' })
     }
 
-    const groq = new Groq({ apiKey })
-
-    const contextStr = context ? `\n\nUser's current context:\n${JSON.stringify(context, null, 2)}` : ''
+    const genAI = new GoogleGenerativeAI(apiKey)
+    
     let finalSystemPrompt = SYSTEM_PROMPT
     if (language === 'hi') {
       finalSystemPrompt = "Respond entirely in Hindi (Devanagari script). Use simple, clear Hindi language. " + finalSystemPrompt
     }
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [
-        { role: 'system', content: finalSystemPrompt + contextStr },
-        { role: 'user', content: message }
-      ],
-      model: 'llama-3.3-70b-versatile',
-      temperature: 0.7,
-      max_tokens: 1024
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash',
+      systemInstruction: finalSystemPrompt
     })
 
-    const response = chatCompletion.choices[0]?.message?.content
+    const contextStr = context ? `\n\nUser's current context:\n${JSON.stringify(context, null, 2)}` : ''
+    const prompt = contextStr ? `${contextStr}\n\nUser: ${message}` : message
 
-    if (!response) throw new Error('Empty response from Groq')
+    const result = await model.generateContent(prompt)
+    const response = result.response.text()
 
-    res.json({ success: true, response, source: 'groq' })
+    if (!response) throw new Error('Empty response from Gemini')
+
+    res.json({ success: true, response, source: 'gemini' })
   } catch (err) {
-    console.error('❌ Copilot Groq Error:', err.message || err);
+    console.error('❌ Copilot Gemini Error:', err.message || err);
     if (err.status) console.error('Status:', err.status);
     
     // Check for common errors
-    let errorType = 'groq-error';
-    if (err.message?.includes('429') || err.message?.includes('rate')) {
+    let errorType = 'gemini-error';
+    if (err.message?.includes('429') || err.message?.includes('quota')) {
       errorType = 'rate-limit';
-    } else if (err.message?.includes('401') || err.message?.includes('key')) {
+    } else if (err.message?.includes('401') || err.message?.includes('API key') || err.message?.includes('key not valid')) {
       errorType = 'invalid-key';
     } else if (err.status === 503 || err.message?.includes('503') || err.message?.includes('overloaded')) {
       errorType = 'model-overloaded';

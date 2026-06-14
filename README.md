@@ -1,10 +1,10 @@
 <div align="center">
 
-# ?? FairLens
+# ‚öñÔ∏è FairLens
 
 ### Clinical-Grade AI Fairness Auditor & Compliance Dossier Generator
 
-**Detect ∑ Measure ∑ Remediate ∑ Report ó Algorithmic Bias**
+**Detect - Measure - Remediate - Report - Algorithmic Bias**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-A3E635.svg?style=flat-square)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
@@ -14,17 +14,17 @@
 
 <br />
 
-**FairLens** is an AI-native web platform that empowers data scientists, machine learning engineers, and compliance officers to **audit, explain, and mitigate** algorithmic bias in ML datasets and predictive models ó before they reach production.
+**FairLens** is an AI-native web platform that empowers data scientists, machine learning engineers, and compliance officers to **audit, explain, and mitigate** algorithmic bias in ML datasets and predictive models - before they reach production.
 
-[Getting Started](#-getting-started) ∑ [Features](#-features) ∑ [Architecture](#-architecture) ∑ [API Reference](#-api-reference) ∑ [Deployment](#-deployment)
+[Getting Started](#-getting-started) - [Features](#-features) - [Architecture](#-architecture) - [API Reference](#-api-reference) - [Deployment](#-deployment)
 
 </div>
 
 ---
 
-## ?? Why FairLens?
+## üí° Why FairLens?
 
-AI models make life-altering decisions daily ó screening resumes, scoring credits, prioritizing medical care, and directing law enforcement. However, these models learn from historical datasets containing **implicit human and systemic biases**, often compounding and cementing inequalities.
+AI models make life-altering decisions daily - screening resumes, scoring credits, prioritizing medical care, and directing law enforcement. However, these models learn from historical datasets containing **implicit human and systemic biases**, often compounding and cementing inequalities.
 
 | Key Problem | How FairLens Solves It |
 |---|---|
@@ -37,58 +37,63 @@ AI models make life-altering decisions daily ó screening resumes, scoring credit
 
 ---
 
-## ? Features
+## ‚ú® Features
 
-### ?? 1. Inspect & Parse
-*   **Privacy-First Parsing**: Upload CSV datasets locally. Processing is executed client-side via **PapaParse** ó your raw data never leaves the browser.
+### üîç 1. Inspect & Parse
+*   **Privacy-First Parsing**: Upload CSV datasets locally. Processing is executed client-side via **PapaParse** - your raw data never leaves the browser.
 *   **Curated Scenarios**: Load sandbox datasets reflecting real-world bias challenges:
-    *   *HR Hiring Bias* (15k rows) ó Gender and educational disparities.
-    *   *Loan Approval Bias* (10k rows) ó Caste and income-based disparities in lending.
-    *   *Medical Diagnosis Bias* (12k rows) ó Age-group and sex biases in cardiovascular disease detection.
+    *   *HR Hiring Bias* (15k rows) - Gender and educational disparities.
+    *   *Loan Approval Bias* (10k rows) - Caste and income-based disparities in lending.
+    *   *Medical Diagnosis Bias* (12k rows) - Age-group and sex biases in cardiovascular disease detection.
 
-### ?? 2. Measure & Predict
+### ‚öñÔ∏è 2. Measure & Predict
 *   **Forensic Bias Engine**: Real-time computation of statistical metrics including **Disparate Impact Ratio**, **Statistical Parity Gap**, and **Equalized Odds**.
 *   **Intersectional Bias Matrix**: Visualizes compounded disadvantage across overlapping protected attributes locally in your browser.
 *   **Ensemble ML Model**: Train a server-side bagged decision-tree classifier to observe model prediction metrics (TPR, FPR, Accuracy, F1) across demographic groups, optimized to evaluate up to 3000 rows for real-time responsiveness.
 
-### ?? 3. Fix (Mitigation)
+### üõ†Ô∏è 3. Fix (Mitigation)
 *   **Remediation Simulator**: Apply mitigation strategies via the backend Engine and view side-by-side performance comparison:
     *   *Re-weighting*: Adjusts mathematical weights of samples to equalize group rates.
     *   *Proxy Removal*: Suppresses features highly correlated with sensitive attributes.
-    *   *Calibrated Resampling*: Balances representation in subset partitions.
+    *   *Calibrated EO*: Balances representation in subset partitions.
 
-### ?? 4. Report & Document
+### üìà 4. Monitor
+*   **Bias Monitor**: Real-time dashboard for tracking data drift and fairness metric degradation in production environments.
+
+### üìÑ 5. Report & Document
 *   **Executive Dashboard**: Renders an executive compliance overview with overall fairness scores, risk ratings, and validation flags.
+*   **AI Nutrition Label + Compliance Checker**: Generates transparent AI model factsheets and validates against global regulatory standards.
+*   **AI Nutrition Label + Compliance Checker**: Generates transparent AI model factsheets and validates against global regulatory standards.
 *   **Multi-Format Export**: One-click download of official reports as **PDF** (via jsPDF/html2canvas).
 
 ---
 
-## ??? Architecture
+## üèóÔ∏è Architecture
 
-\\\mermaid
+```mermaid
 graph TB
-    subgraph CLIENT["??? Frontend ó React 19 + Vite 6"]
+    subgraph CLIENT["Frontend - React 19 + Vite 6"]
         direction TB
         UI["App Shell<br/>(Obsidian & Dune Theme)"]
         TABS["Tab Navigator"]
         UI --> TABS
-        TABS --> INSPECT["?? Inspect<br/>Upload CSV / Load Samples"]
-        TABS --> MEASURE["?? Measure<br/>Fairness Metrics & Charts"]
-        TABS --> FIX["?? Fix<br/>Remediation Strategies"]
-        TABS --> REPORT["?? Report<br/>PDF Export"]
+        TABS --> INSPECT["Inspect<br/>Upload CSV / Load Samples"]
+        TABS --> MEASURE["Measure<br/>Fairness Metrics & Charts"]
+        TABS --> FIX["Fix<br/>Remediation Strategies"]
+        TABS --> REPORT["Report<br/>PDF Export"]
         PP["PapaParse<br/>(Client-side CSV)"]
         RC["Recharts<br/>(Visualizations)"]
         INSPECT --> PP
         MEASURE --> RC
     end
 
-    subgraph SERVER["?? Backend ó Node.js 20 + Express 4"]
+    subgraph SERVER["Backend - Node.js 20 + Express 4"]
         direction TB
         API["REST API Gateway"]
         API --> TRAIN["/api/analysis/train<br/>ML Training"]
         API --> REMED["/api/analysis/remediate<br/>Bias Mitigation"]
 
-        subgraph ML["?? ML Engine"]
+        subgraph ML["ML Engine"]
             DT["Ensemble Bagging<br/>(3 Decision Trees)"]
             CM["Confusion Matrix<br/>& Fairness Metrics"]
             DT --> CM
@@ -97,7 +102,7 @@ graph TB
         REMED --> ML
     end
 
-    subgraph CLOUD["?? Deployment"]
+    subgraph CLOUD["Deployment"]
         FIREBASE["Firebase<br/>Hosting"]
         RENDER["Render<br/>(Web Service)"]
     end
@@ -112,9 +117,9 @@ graph TB
     style ML fill:#1e293b,stroke:#a78bfa,stroke-width:2px,color:#fff
     style FIREBASE fill:#FFCA28,stroke:#fff,stroke-width:2px,color:#000
     style RENDER fill:#46E3B7,stroke:#fff,stroke-width:2px,color:#000
-\\\
+```
 
-### Tech Stack
+### üíª Tech Stack
 
 | Layer | Technologies |
 |---|---|
@@ -122,85 +127,89 @@ graph TB
 | **Styling** | Custom variables + Tailwind CSS 4 ("Obsidian & Dune" design system) |
 | **Backend** | Node.js 20+, Express 4 |
 | **ML Engine** | ml-cart (Ensemble Bagging), ml-confusion-matrix |
+| **AI Integration** | Google Gemini 2.5 Flash (Copilot, Plain English fixes, Hindi Translation) |
 | **Compliance Frameworks** | EEOC Uniform Guidelines (Demographic Parity), India DPDP Act 2023 |
 | **Deployment** | Firebase Hosting (Client), Render (Server) |
 
 ---
 
-## ?? Getting Started
+## üöÄ Getting Started
 
 ### Prerequisites
 *   **Node.js** &ge; 20.x
 *   **npm** &ge; 10.x
 
 ### 1. Clone the Repository
-\\\ash
+```ash
 git clone https://github.com/DevWithOm/FairLens.git
 cd FairLens
-\\\
+```
 
 ### 2. Install Dependencies
-\\\ash
+```ash
 # Install root, client, and server dependencies
 npm run install:all
-\\\
+```
 
 ### 3. Configure the Environment
-Create a \.env\ file in the project root:
-\\\env
+Create a `.env` file in the project root:
+```env
+# Gemini Copilot
+GEMINI_API_KEY=your_gemini_api_key_here
+
 # Server Settings
 PORT=5000
 NODE_ENV=development
 CLIENT_URL=http://localhost:5173
-\\\
+```
 
 ### 4. Start Development Servers
-\\\ash
+```ash
 # Start backend API (Terminal 1)
 cd server && npm run dev
 
 # Start React client (Terminal 2)
 cd client && npm run dev
-\\\
+```
 
 ---
 
-## ?? API Reference
+## üîå API Reference
 
 ### Core Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
-| \GET\ | \/api/health\ | Health check & system diagnostic metadata. |
-| \GET\ | \/api/datasets\ | List curated sandbox scenarios. |
-| \POST\ | \/api/analysis/train\ | Train ensemble model & return per-group prediction metrics. |
-| \POST\ | \/api/analysis/predict\ | Simulate counterfactual outcomes for Profile Flipper. |
-| \POST\ | \/api/analysis/remediate\ | Simulate data debiasing strategies. |
+| `GET` | `/api/health` | Health check & system diagnostic metadata. |
+| `GET` | `/api/datasets` | List curated sandbox scenarios. |
+| `POST` | `/api/analysis/train` | Train ensemble model & return per-group prediction metrics. |
+| `POST` | `/api/analysis/predict` | Simulate counterfactual outcomes for Profile Flipper. |
+| `POST` | `/api/analysis/remediate` | Simulate data debiasing strategies. |
 
 ---
 
-## ?? Deployment
+## ‚òÅÔ∏è Deployment
 
 FairLens is configured for cloud deployment using Firebase and Render:
-*   Deploy the built production client in \client/dist\ to **Firebase Hosting**. Use \deploy.sh\.
-*   Deploy the \server/\ subdirectory directly to **Render** as a Web Service. The provided \ender.yaml\ automates this process.
+*   Deploy the built production client in `client/dist` to **Firebase Hosting**. Use `deploy.sh`.
+*   Deploy the `server/` subdirectory directly to **Render** as a Web Service. The provided `render.yaml` automates this process.
 
 ---
 
-## ?? Contributing
+## ü§ù Contributing
 
 Contributions are welcome! Please follow these guidelines:
-*   **Branch Naming**: use prefixes like \eat/\, \ix/\, or \docs/\.
+*   **Branch Naming**: use prefixes like `feat/`, `fix/`, or `docs/`.
 *   **Commit Format**: adhere to [Conventional Commits](https://www.conventionalcommits.org/).
 
 ---
 
-## ?? License
+## üìú License
 
-This project is licensed under the **MIT License** ó see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 <div align="center">
 
-**Built with ?? for the Google Solution Challenge 2026**
+**Built for the Google Solution Challenge 2026**
 
 </div>

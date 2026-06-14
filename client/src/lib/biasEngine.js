@@ -104,10 +104,10 @@ export function simulateFlip(rows, rowIndex, flipCol, flipValue, outcomeCol) {
   const otherCols = Object.keys(row).filter(k => k !== flipCol && k !== outcomeCol)
   
   // Optimization: Pre-filter by flip value to reduce pool quickly
-  const candidates = rows.filter(r => String(r[flipCol]) === String(flipValue))
+  const candidates = rows.filter(r => r && String(r[flipCol]) === String(flipValue))
   
   const similar = candidates.filter(r =>
-    otherCols.every(k => r[k] === row[k])
+    r && otherCols.every(k => r[k] === row[k])
   )
 
   // If no exact match, use candidates pool
