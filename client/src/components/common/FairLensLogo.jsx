@@ -31,14 +31,14 @@ export function FairLensLogo({ size = 'medium', showText = true, layout = 'horiz
     }}>
       <div style={iconStyle}>
         <img 
-          src="/logo-icon.png" 
+          src="/logo-icon.jpg" 
           alt="FairLens Logo" 
           style={{ 
             width: iconSize, 
             height: iconSize, 
             objectFit: 'contain',
             mixBlendMode: 'screen',
-            filter: 'grayscale(100%) sepia(100%) hue-rotate(5deg) saturate(120%) brightness(110%) opacity(0.9)'
+            transition: 'transform 0.3s ease'
           }} 
         />
       </div>
