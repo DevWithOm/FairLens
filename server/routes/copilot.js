@@ -134,7 +134,7 @@ function generateLocalResponse(question, context, language) {
 
   return isHindi 
     ? "मुझे माफ़ करें, मैं इस प्रश्न का सटीक उत्तर नहीं दे सकता। चूंकि यह ऑफ़लाइन मोड है, मैं केवल पूर्वाग्रह मेट्रिक्स से संबंधित बुनियादी प्रश्नों का उत्तर दे सकता हूँ। पूर्ण AI अनुभव के लिए कृपया अपना API Key जोड़ें।"
-    : `(Offline Mode)\n\nI can't fully answer that without an active API connection. Currently, I can only explain basic concepts like "Disparate Impact" or "4/5ths Rule". \n\n**To get open-ended AI answers, please ensure your GROQ_API_KEY is set in the .env file!**`
+    : `(Offline Mode)\n\nI can't fully answer that without an active API connection. Currently, I can only explain basic concepts like "Disparate Impact" or "4/5ths Rule". \n\n**To get open-ended AI answers, please ensure your GEMINI_API_KEY is set in the .env file!**`
 }
 
 export default router

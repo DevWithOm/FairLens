@@ -143,7 +143,7 @@ export default function CopilotPanel({ onClose }) {
           </div>
           <div>
             <h3 style={{ fontSize: '0.9375rem', fontWeight: 700 }}>FairLens Copilot</h3>
-            <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Powered by Groq</p>
+            <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Powered by Gemini</p>
           </div>
         </div>
         <button

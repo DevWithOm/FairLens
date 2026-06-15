@@ -42,10 +42,10 @@ app.use('/api/audits', auditsRoutes)
 
 // ── Diagnostics ──
 app.get('/api/debug/config', (req, res) => {
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   res.json({
-    groqKeyLoaded: !!apiKey && apiKey !== 'your_groq_api_key_here',
-    groqKeyMasked: apiKey ? `${apiKey.substring(0, 7)}...${apiKey.substring(apiKey.length - 4)}` : 'missing',
+    geminiKeyLoaded: !!apiKey && apiKey !== 'your_gemini_api_key_here',
+    geminiKeyMasked: apiKey ? `${apiKey.substring(0, 7)}...${apiKey.substring(apiKey.length - 4)}` : 'missing',
     port: PORT,
     nodeEnv: process.env.NODE_ENV,
     clientUrl: process.env.CLIENT_URL
@@ -76,11 +76,11 @@ app.listen(PORT, () => {
   ╚══════════════════════════════════════════╝
   `)
   
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey || apiKey === 'your_groq_api_key_here') {
-    console.log('⚠️  WARNING: GROQ_API_KEY is not set or is default. AI features will run in Offline Mode.');
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+    console.log('⚠️  WARNING: GEMINI_API_KEY is not set or is default. AI features will run in Offline Mode.');
   } else {
-    console.log(`✅ Groq API Key loaded (${apiKey.substring(0, 7)}...)`);
+    console.log(`✅ Gemini API Key loaded (${apiKey.substring(0, 7)}...)`);
   }
 })
 
